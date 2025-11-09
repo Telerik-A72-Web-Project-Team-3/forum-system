@@ -1,16 +1,14 @@
 package com.team3.forum.models;
 
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "comments")
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Comment {
 
@@ -30,14 +28,5 @@ public class Comment {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    public Comment() {
-    }
-
-    public Comment(Post post, User user, String content) {
-        this.post = post;
-        this.user = user;
-        this.content = content;
-    }
 
 }
