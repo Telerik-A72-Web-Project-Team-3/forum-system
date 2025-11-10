@@ -1,12 +1,19 @@
 package com.team3.forum.repositories;
 
+import com.team3.forum.exceptions.EntityNotFoundException;
 import com.team3.forum.models.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository{
+
+    @PersistenceContext
+    private EntityManager em;
+
     @Override
     public User save(User entity) {
         return null;
@@ -14,7 +21,11 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public User findById(int id) {
-        return null;
+        User result = em.find(User.class, id);
+        if (result == null){
+            throw new EntityNotFoundException("User", "id", String.valueOf(id));
+        }
+        return result;
     }
 
     @Override
