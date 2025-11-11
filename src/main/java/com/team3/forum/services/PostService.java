@@ -14,4 +14,10 @@ public interface PostService {
     Post create(Post post);
 
     Post update(Post post);
+
+    int getLikes(int postId);
+
+    void likePost(int postId, int userId);
+
+    void unlikePost(int postId, int userId);
 }

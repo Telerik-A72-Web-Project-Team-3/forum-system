@@ -21,4 +21,11 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(e.getMessage());
     }
+
+    @ExceptionHandler(DuplicateEntityException.class)
+    public ResponseEntity<String> handleDuplicateEntityException(DuplicateEntityException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(e.getMessage());
+    }
 }
