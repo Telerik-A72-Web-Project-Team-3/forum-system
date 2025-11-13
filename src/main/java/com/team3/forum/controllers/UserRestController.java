@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,18 +29,19 @@ public class UserRestController {
         this.userMapper = userMapper;
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserCreateDto userCreateDto) {
-        User user = userService.createUser(userCreateDto);
-        UserResponseDto userResponseDto = userMapper.toResponseDto(user);
-        return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
-    }
 
     @PostMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable int id,
-                                                      @Valid @RequestBody UserUpdateDto userUpdateDto) {
-        User user = userService.updateUser(id, userUpdateDto);
-        UserResponseDto userResponseDto = userMapper.toResponseDto(user);
+                                                      @Valid @RequestBody UserUpdateDto userUpdateDto,
+                                                      Authentication authentication) {
+        String currentUsername = authentication.getName();
+        User currentUser = userService.findByUsername(currentUsername);
+
+        if (currentUser.getId()!=id && !currentUser.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        User updatedUser = userService.updateUser(id, userUpdateDto);
+        UserResponseDto userResponseDto = userMapper.toResponseDto(updatedUser);
         return ResponseEntity.ok(userResponseDto);
     }
 
