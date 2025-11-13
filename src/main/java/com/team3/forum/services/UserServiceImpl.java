@@ -1,5 +1,6 @@
 package com.team3.forum.services;
 
+import com.team3.forum.exceptions.DuplicateEntityException;
 import com.team3.forum.helpers.UserMapper;
 import com.team3.forum.models.User;
 import com.team3.forum.models.userDtos.UserCreateDto;
@@ -29,7 +30,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(UserCreateDto dto) {
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new DuplicateEntityException("User", "username", dto.getUsername());
+        }
         User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setAdmin(false);
        return userRepository.save(user);
     }
 

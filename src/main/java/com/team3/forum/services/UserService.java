@@ -7,7 +7,7 @@ import com.team3.forum.models.userDtos.UserUpdateDto;
 import java.util.List;
 
 public interface UserService {
-    User createUser(UserCreateDto dto);          // ✅ DTO for input
+    User createUser(UserCreateDto dto);
     User updateUser(int id, UserUpdateDto dto);
     User findById(int id);
     boolean existsById(int id);
