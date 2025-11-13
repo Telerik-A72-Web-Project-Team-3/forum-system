@@ -1,5 +1,6 @@
 package com.team3.forum.services;
 
+import com.team3.forum.exceptions.DuplicateEntityException;
 import com.team3.forum.helpers.UserMapper;
 import com.team3.forum.models.User;
 import com.team3.forum.models.userDtos.UserCreateDto;
@@ -8,6 +9,7 @@ import com.team3.forum.repositories.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 
@@ -16,17 +18,24 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
     @Override
     public User createUser(UserCreateDto dto) {
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new DuplicateEntityException("User", "username", dto.getUsername());
+        }
         User user = userMapper.toEntity(dto);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setAdmin(false);
        return userRepository.save(user);
     }
 
@@ -63,5 +72,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(User entity) {
         userRepository.delete(entity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }

@@ -3,6 +3,7 @@ package com.team3.forum.repositories;
 import com.team3.forum.exceptions.EntityNotFoundException;
 import com.team3.forum.models.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 
@@ -34,8 +35,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean existsById(int id) {
-        User user = em.find(User.class, id);
-        return user != null;
+        Long count = em.createQuery(
+                        "SELECT COUNT(u) FROM User u WHERE u.id = :id",
+                        Long.class)
+                .setParameter("id", id)
+                .getSingleResult();
+        return count > 0;
     }
 
     @Override
@@ -55,5 +60,26 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void delete(User entity) {
         em.remove(em.contains(entity) ? entity : em.merge(entity));
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        try {
+            return em.createQuery("from User u where u.username=:username", User.class)
+                    .setParameter("username", username)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            throw new EntityNotFoundException("User", "username", username);
+        }
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        Long count = em.createQuery(
+                        "SELECT COUNT(u) FROM User u WHERE u.username = :username",
+                        Long.class)
+                .setParameter("username", username)
+                .getSingleResult();
+        return count > 0;
     }
 }
