@@ -73,4 +73,10 @@ public class UserServiceImpl implements UserService {
     public void delete(User entity) {
         userRepository.delete(entity);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }
