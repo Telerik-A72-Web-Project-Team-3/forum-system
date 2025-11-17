@@ -1,6 +1,7 @@
 package com.team3.forum.services;
 
 import com.team3.forum.models.Comment;
+import com.team3.forum.models.User;
 import com.team3.forum.models.commentDtos.CommentCreationDto;
 import com.team3.forum.models.commentDtos.CommentUpdateDto;
 
@@ -8,9 +9,9 @@ import java.util.List;
 
 public interface CommentService {
 
-    Comment createComment(CommentCreationDto dto, int postId, int userId);
+    Comment createComment(CommentCreationDto dto, int postId, User requester);
 
-    Comment updateComment(int commentId, CommentUpdateDto dto, int userId);
+    Comment updateComment(int commentId, CommentUpdateDto dto, User requester);
 
     Comment findById(int commentId);
 
@@ -18,7 +19,7 @@ public interface CommentService {
 
     boolean existsById(int commentId);
 
-    void deleteById(int commentId, int userId);
+    void deleteById(int commentId, User requester);
 
     void delete(Comment comment);
 }

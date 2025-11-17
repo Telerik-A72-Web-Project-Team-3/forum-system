@@ -8,10 +8,10 @@ import com.team3.forum.models.commentDtos.CommentUpdateDto;
 import com.team3.forum.services.CommentService;
 import com.team3.forum.services.UserService;
 import jakarta.validation.Valid;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,7 +51,8 @@ public class CommentRestController {
         String username = authentication.getName();
         User user = userService.findByUsername(username);
 
-        Comment comment = commentService.createComment(commentCreationDto, postId, user.getId());
+        // ✅ Подаваш user към service
+        Comment comment = commentService.createComment(commentCreationDto, postId, user);
 
         CommentResponseDto response = CommentResponseDto.builder()
                 .id(comment.getId())
@@ -73,7 +74,7 @@ public class CommentRestController {
         String username = authentication.getName();
         User user = userService.findByUsername(username);
 
-        Comment updated = commentService.updateComment(commentId, commentUpdateDto, user.getId());
+        Comment updated = commentService.updateComment(commentId, commentUpdateDto, user);
 
         CommentResponseDto response = CommentResponseDto.builder()
                 .id(updated.getId())
@@ -94,7 +95,7 @@ public class CommentRestController {
         String username = authentication.getName();
         User user = userService.findByUsername(username);
 
-        commentService.deleteById(commentId, user.getId());
+        commentService.deleteById(commentId, user);
         return ResponseEntity.noContent().build();
     }
 }

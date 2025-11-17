@@ -39,13 +39,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment createComment(CommentCreationDto dto, int postId, int userId) {
+    public Comment createComment(CommentCreationDto dto, int postId, User requester) {
         Post post = postRepository.findById(postId);
-        User user = userRepository.findById(userId);
 
         Comment comment = new Comment();
         comment.setPost(post);
-        comment.setUser(user);
+        comment.setUser(requester);
         comment.setContent(dto.getContent());
 
         return commentRepository.save(comment);
@@ -53,11 +52,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public Comment updateComment(int commentId, CommentUpdateDto dto, int userId) {
+    public Comment updateComment(int commentId, CommentUpdateDto dto, User requester) {
         Comment comment = commentRepository.findById(commentId);
-        User requester = userRepository.findById(userId);
 
-        if (!requester.isAdmin() && comment.getUser().getId() != userId) {
+        if (!requester.isAdmin() && comment.getUser().getId() != requester.getId()) {
             throw new AuthorizationException(EDIT_AUTHORIZATION_ERROR);
         }
 
@@ -88,11 +86,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteById(int commentId, int userId) {
+    public void deleteById(int commentId, User requester) {
         Comment comment = commentRepository.findById(commentId);
-        User requester = userRepository.findById(userId);
 
-        if (!requester.isAdmin() && comment.getUser().getId() != userId) {
+        if (!requester.isAdmin() && comment.getUser().getId() != requester.getId()) {
             throw new AuthorizationException(DELETE_AUTHORIZATION_ERROR);
         }
 
