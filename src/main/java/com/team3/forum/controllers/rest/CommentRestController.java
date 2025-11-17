@@ -1,34 +1,31 @@
 package com.team3.forum.controllers.rest;
 
-import com.team3.forum.helpers.TempAuthenticationHelper;
 import com.team3.forum.models.Comment;
 import com.team3.forum.models.User;
 import com.team3.forum.models.commentDtos.CommentCreationDto;
 import com.team3.forum.models.commentDtos.CommentResponseDto;
 import com.team3.forum.models.commentDtos.CommentUpdateDto;
 import com.team3.forum.services.CommentService;
+import com.team3.forum.services.UserService;
 import jakarta.validation.Valid;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
 @RestController
 @RequestMapping("/api/posts/{postId}/comments")
 public class CommentRestController {
     private final CommentService commentService;
-    private final TempAuthenticationHelper authenticationHelper;
+    private final UserService userService;
 
     @Autowired
-    public CommentRestController(CommentService commentService,
-                                 TempAuthenticationHelper authenticationHelper) {
+    public CommentRestController(CommentService commentService, UserService userService) {
         this.commentService = commentService;
-        this.authenticationHelper = authenticationHelper;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -47,11 +44,15 @@ public class CommentRestController {
 
     @PostMapping
     public ResponseEntity<CommentResponseDto> createComment(
-            @RequestHeader HttpHeaders headers,
             @PathVariable int postId,
-            @Valid @RequestBody CommentCreationDto commentCreationDto) {
-        User user = authenticationHelper.tryGetUser(headers);
-        Comment comment = commentService.createComment(commentCreationDto, postId, user.getId());
+            @Valid @RequestBody CommentCreationDto commentCreationDto,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        // ✅ Подаваш user към service
+        Comment comment = commentService.createComment(commentCreationDto, postId, user);
 
         CommentResponseDto response = CommentResponseDto.builder()
                 .id(comment.getId())
@@ -65,12 +66,15 @@ public class CommentRestController {
 
     @PutMapping("/{commentId}")
     public ResponseEntity<CommentResponseDto> updateComment(
-            @RequestHeader HttpHeaders headers,
             @PathVariable int postId,
             @PathVariable int commentId,
-            @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
-        User user = authenticationHelper.tryGetUser(headers);
-        Comment updated = commentService.updateComment(commentId, commentUpdateDto, user.getId());
+            @Valid @RequestBody CommentUpdateDto commentUpdateDto,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        Comment updated = commentService.updateComment(commentId, commentUpdateDto, user);
 
         CommentResponseDto response = CommentResponseDto.builder()
                 .id(updated.getId())
@@ -84,11 +88,14 @@ public class CommentRestController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(
-            @RequestHeader HttpHeaders headers,
             @PathVariable int postId,
-            @PathVariable int commentId) {
-        User user = authenticationHelper.tryGetUser(headers);
-        commentService.deleteById(commentId, user.getId());
+            @PathVariable int commentId,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        commentService.deleteById(commentId, user);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,8 +1,10 @@
 package com.team3.forum.services;
 
+import com.team3.forum.exceptions.AuthorizationException;
 import com.team3.forum.exceptions.DuplicateEntityException;
 import com.team3.forum.exceptions.EntityNotFoundException;
 import com.team3.forum.models.Tag;
+import com.team3.forum.models.User;
 import com.team3.forum.repositories.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import java.util.List;
 @Transactional
 public class TagServiceImpl implements TagService {
 
+    public static final String ADMIN_AUTHORIZATION_ERROR = "Only administrators can manage tags";
+
     private final TagRepository tagRepository;
 
     @Autowired
@@ -23,7 +27,11 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Tag createTag(Tag tag) {
+    public Tag createTag(Tag tag, User requester) {
+        if (!requester.isAdmin()) {
+            throw new AuthorizationException(ADMIN_AUTHORIZATION_ERROR);
+        }
+
         tag.setName(tag.getName().toLowerCase().trim());
 
         if (tagRepository.findAll().stream()
@@ -36,7 +44,11 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public Tag updateTag(int id, Tag tag) {
+    public Tag updateTag(int id, Tag tag, User requester) {
+        if (!requester.isAdmin()) {
+            throw new AuthorizationException(ADMIN_AUTHORIZATION_ERROR);
+        }
+
         Tag existing = tagRepository.findById(id);
         existing.setName(tag.getName().toLowerCase().trim());
         return tagRepository.save(existing);
@@ -56,7 +68,11 @@ public class TagServiceImpl implements TagService {
 
     @Override
     @Transactional
-    public void deleteById(int id) {
+    public void deleteById(int id, User requester) {
+        if (!requester.isAdmin()) {
+            throw new AuthorizationException(ADMIN_AUTHORIZATION_ERROR);
+        }
+
         if (!tagRepository.existsById(id)) {
             throw new EntityNotFoundException("Tag", id);
         }
