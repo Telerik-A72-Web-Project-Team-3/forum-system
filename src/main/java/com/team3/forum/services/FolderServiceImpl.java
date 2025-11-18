@@ -57,15 +57,14 @@ public class FolderServiceImpl implements FolderService{
     }
 
     @Override
-    public Folder update(int folderId, FolderUpdateDto folderUpdateDto, User requester) {
-        Folder persistent = folderRepository.findById(folderId)
-                .orElseThrow(() -> new EntityNotFoundException("folder", folderId));
+    public Folder update(Folder folder, FolderUpdateDto folderUpdateDto, User requester) {
+        Folder persistent = folderRepository.findById(folder.getId())
+                .orElseThrow(() -> new EntityNotFoundException("folder", folder.getId()));
         if (!requester.isAdmin()) {
             throw new AuthorizationException(EDIT_AUTHORIZATION_ERROR);
         }
         persistent.setName(folderUpdateDto.getName());
         persistent.setSlug(folderUpdateDto.getSlug());
-        persistent.setParentFolder(folderUpdateDto.getParentFolder());
 
         return folderRepository.save(persistent);
     }

@@ -17,7 +17,7 @@ public interface FolderService {
 
     Folder create(Folder folder, User requester);
 
-    Folder update(int folderId, FolderUpdateDto folderUpdateDto, User requester);
+    Folder update(Folder folder, FolderUpdateDto folderUpdateDto, User requester);
 
     Folder getFolderBySlug(String slug);
 
