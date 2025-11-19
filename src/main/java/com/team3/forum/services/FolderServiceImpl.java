@@ -2,6 +2,7 @@ package com.team3.forum.services;
 
 import com.team3.forum.exceptions.AuthorizationException;
 import com.team3.forum.exceptions.EntityNotFoundException;
+import com.team3.forum.exceptions.FolderNotEmptyException;
 import com.team3.forum.models.Folder;
 import com.team3.forum.models.Post;
 import com.team3.forum.models.User;
@@ -42,27 +43,33 @@ public class FolderServiceImpl implements FolderService{
 
     @Override
     public void deleteById(int id, User requester) {
-        Folder persistent = folderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("folder", id));
         if (!requester.isAdmin()) {
             throw new AuthorizationException(DELETE_AUTHORIZATION_ERROR);
         }
-        folderRepository.deleteById(id);
+        Folder persistent = folderRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("folder", id));
+        if (!persistent.getPosts().isEmpty()
+                || !persistent.getChildFolders().isEmpty()){
+            throw new FolderNotEmptyException(id);
+        }
+        folderRepository.delete(persistent);
     }
 
     @Override
     public Folder create(Folder folder, User requester) {
-        //TODO: Validate admin rights
+        if (!requester.isAdmin()) {
+            throw new AuthorizationException(DELETE_AUTHORIZATION_ERROR);
+        }
         return folderRepository.save(folder);
     }
 
     @Override
     public Folder update(Folder folder, FolderUpdateDto folderUpdateDto, User requester) {
-        Folder persistent = folderRepository.findById(folder.getId())
-                .orElseThrow(() -> new EntityNotFoundException("folder", folder.getId()));
         if (!requester.isAdmin()) {
             throw new AuthorizationException(EDIT_AUTHORIZATION_ERROR);
         }
+        Folder persistent = folderRepository.findById(folder.getId())
+                .orElseThrow(() -> new EntityNotFoundException("folder", folder.getId()));
         persistent.setName(folderUpdateDto.getName());
         persistent.setSlug(folderUpdateDto.getSlug());
 
