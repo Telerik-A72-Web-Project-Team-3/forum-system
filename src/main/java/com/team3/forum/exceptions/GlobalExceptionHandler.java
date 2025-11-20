@@ -45,6 +45,11 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(EntityUpdateConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityUpdateConflictException(EntityUpdateConflictException e) {
+        return buildErrorResponse(HttpStatus.CONFLICT, "Conflict", e.getMessage());
+    }
+
     private ResponseEntity<Map<String, Object>> buildErrorResponse(
             HttpStatus status, String error, String message) {
         Map<String, Object> errorResponse = new HashMap<>();

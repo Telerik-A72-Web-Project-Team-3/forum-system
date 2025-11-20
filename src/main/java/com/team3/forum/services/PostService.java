@@ -13,6 +13,8 @@ public interface PostService {
 
     void deleteById(int id, User requester);
 
+    Post restoreById(int id, User requester);
+
     Post create(Post post);
 
     Post update(int postId, PostUpdateDto postUpdateDto, User requester);

@@ -85,6 +85,17 @@ public class PostRestController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{postId}/restore")
+    public ResponseEntity<PostResponseDto> restorePost(
+            @PathVariable int postId,
+            Authentication authentication) {
+        String currentUsername = authentication.getName();
+        User requester = userService.findByUsername(currentUsername);
+        Post detached = postService.restoreById(postId, requester);
+        PostResponseDto response = postMapper.toResponseDto(detached);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{postId}/likes")
     public ResponseEntity<LikeCountDto> getLikes(@PathVariable int postId) {
         int likes = postService.getLikes(postId);

@@ -2,6 +2,7 @@ package com.team3.forum.services;
 
 import com.team3.forum.exceptions.AuthorizationException;
 import com.team3.forum.exceptions.DuplicateEntityException;
+import com.team3.forum.exceptions.EntityUpdateConflictException;
 import com.team3.forum.exceptions.EntityNotFoundException;
 import com.team3.forum.models.Post;
 import com.team3.forum.models.User;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -46,10 +48,35 @@ public class PostServiceImpl implements PostService{
     @Override
     public void deleteById(int id, User requester) {
         Post persistent = postRepository.findById(id);
+        if (persistent == null) {
+            throw new EntityNotFoundException("Post", id);
+        }
         if (!requester.isAdmin() && persistent.getUser().getId() != requester.getId()) {
             throw new AuthorizationException(DELETE_AUTHORIZATION_ERROR);
         }
-        postRepository.deleteById(id);
+        if (persistent.isDeleted()) {
+            throw new EntityUpdateConflictException(String.format("Post with id %d is already deleted.", id));
+        }
+        persistent.setDeleted(true);
+        persistent.setDeletedAt(LocalDateTime.now());
+        postRepository.save(persistent);
+    }
+
+    @Override
+    public Post restoreById(int id, User requester){
+        Post persistent = postRepository.findById(id);
+        if (persistent == null) {
+            throw new EntityNotFoundException("Post", id);
+        }
+        if (!requester.isAdmin() && persistent.getUser().getId() != requester.getId()) {
+            throw new AuthorizationException(DELETE_AUTHORIZATION_ERROR);
+        }
+        if (!persistent.isDeleted()) {
+            throw new EntityUpdateConflictException(String.format("Post with id %d is not deleted.", id));
+        }
+        persistent.setDeleted(false);
+        persistent.setDeletedAt(null);
+        return postRepository.save(persistent);
     }
 
     @Override
