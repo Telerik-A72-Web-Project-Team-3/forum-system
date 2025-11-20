@@ -46,7 +46,8 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public void deleteById(int id, User requester) {
+    public void deleteById(int id, int requesterId) {
+        User requester = userRepository.findById(requesterId);
         Post persistent = postRepository.findById(id);
         if (persistent == null) {
             throw new EntityNotFoundException("Post", id);
@@ -63,7 +64,8 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Post restoreById(int id, User requester){
+    public Post restoreById(int id, int requesterId){
+        User requester = userRepository.findById(requesterId);
         Post persistent = postRepository.findById(id);
         if (persistent == null) {
             throw new EntityNotFoundException("Post", id);
@@ -85,7 +87,8 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Post update(int postId, PostUpdateDto postUpdateDto, User requester) {
+    public Post update(int postId, PostUpdateDto postUpdateDto, int requesterId) {
+        User requester = userRepository.findById(requesterId);
         Post persistent = postRepository.findById(postId);
         if (!requester.isAdmin() && persistent.getUser().getId() != requester.getId()) {
             throw new AuthorizationException(EDIT_AUTHORIZATION_ERROR);
