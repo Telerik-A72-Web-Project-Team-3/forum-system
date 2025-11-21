@@ -1,8 +1,7 @@
-package com.team3.forum.controllers;
+package com.team3.forum.controllers.rest;
 
 import com.team3.forum.helpers.UserMapper;
 import com.team3.forum.models.User;
-import com.team3.forum.models.userDtos.UserCreateDto;
 import com.team3.forum.models.userDtos.UserResponseDto;
 import com.team3.forum.models.userDtos.UserSummaryDto;
 import com.team3.forum.models.userDtos.UserUpdateDto;
@@ -10,9 +9,7 @@ import com.team3.forum.security.CustomUserDetails;
 import com.team3.forum.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
