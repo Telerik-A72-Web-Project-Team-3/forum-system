@@ -2,10 +2,17 @@ package com.team3.forum.helpers;
 
 import com.team3.forum.models.Folder;
 import com.team3.forum.models.folderDtos.FolderCreateDto;
+import com.team3.forum.models.folderDtos.FolderPathDto;
 import com.team3.forum.models.folderDtos.FolderResponseDto;
 import com.team3.forum.services.FolderService;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
+//TODO: Ideally mapper should not call services.
+// Getting views can be done with the repository query, but time consuming.
+// Consider it for future improvements.
 @Component
 public class FolderMapper {
     private final FolderService folderService;
@@ -26,6 +33,7 @@ public class FolderMapper {
                 .build();
     }
 
+
     public FolderResponseDto toResponseDto(Folder folder) {
         return FolderResponseDto.builder()
                 .name(folder.getName())
@@ -33,6 +41,32 @@ public class FolderMapper {
                 .createdAt(folder.getCreatedAt())
                 .updatedAt(folder.getUpdatedAt())
                 .id(folder.getId())
+                .postCount(folder.getPosts().size())
+                .folderCount(folder.getChildFolders().size())
+                .pathFolders(buildPathFolders(folder, new ArrayList<>()))
+                .path(buildPath(folder, ""))
                 .build();
+    }
+
+    private String buildPath(Folder folder, String path) {
+        StringBuilder sb = new StringBuilder();
+        if (folder.getParentFolder() != null) {
+            sb.append(buildPath(folder.getParentFolder(), path)).append("/");
+        }
+        return sb.append(path).append(folder.getSlug()).toString();
+    }
+
+    private List<FolderPathDto> buildPathFolders(Folder folder, List<FolderPathDto> result) {
+        if (folder.getParentFolder() != null) {
+            buildPathFolders(folder.getParentFolder(), result);
+        }
+        result.add(
+                FolderPathDto.builder()
+                        .path(buildPath(folder, ""))
+                        .slug(folder.getSlug())
+                        .name(folder.getName())
+                        .build()
+        );
+        return result;
     }
 }
