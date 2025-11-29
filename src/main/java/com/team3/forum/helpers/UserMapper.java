@@ -1,10 +1,7 @@
 package com.team3.forum.helpers;
 
 import com.team3.forum.models.User;
-import com.team3.forum.models.userDtos.UserCreateDto;
-import com.team3.forum.models.userDtos.UserResponseDto;
-import com.team3.forum.models.userDtos.UserSummaryDto;
-import com.team3.forum.models.userDtos.UserUpdateDto;
+import com.team3.forum.models.userDtos.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,11 +45,35 @@ public class UserMapper {
         }
     }
 
-    public UserSummaryDto toSummaryDto(User user){
+    public UserSummaryDto toSummaryDto(User user) {
         return UserSummaryDto
                 .builder()
                 .userId(user.getId())
                 .username(user.getUsername())
+                .build();
+    }
+
+    public UserStatsDto toStatsDto(User user) {
+        int topicCount = user.getPosts().size();
+        int replyCount = user.getComments().size();
+
+        int likesCount = user.getPosts().stream()
+                .mapToInt(post -> post.getLikedBy().size())
+                .sum();
+
+        return UserStatsDto.builder()
+                .topicCount(topicCount)
+                .replyCount(replyCount)
+                .likesCount(likesCount)
+                .build();
+    }
+
+    public UserUpdateDto toUpdateDto(User user) {
+        return UserUpdateDto.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }
