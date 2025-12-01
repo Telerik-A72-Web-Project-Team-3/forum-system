@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      layout:decorate="~{Layout}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
 <head>
-    <meta charset="UTF-8"/>
-    <title>Forum App – Home</title>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <link href="/css/styles.css" rel="stylesheet"/>
+    <title>View posts</title>
 </head>
-<body>
-<div class="page">
-    <!-- NAVBAR -->
-    <header th:replace="Header:: navigation-bar"></header>
-    <!-- MAIN -->
+
+<section layout:fragment="content">
     <main class="folder-page">
         <div class="container">
             <!-- Breadcrumb & header -->
@@ -151,7 +148,7 @@
 
                     <div class="topic-list">
                         <!-- Topics -->
-                        <a th:replace="PostPreviewFragment:: post-preview"></a>
+                        <a th:replace="~{PostPreviewFragment:: post-preview(posts=${posts})}"></a>
                     </div>
 
                     <!-- Simple pagination mockup -->
@@ -164,10 +161,5 @@
             </div>
         </div>
     </main>
-
-
-    <!-- FOOTER -->
-    <footer th:replace="Footer:: footer"></footer>
-</div>
-</body>
+</section>
 </html>
