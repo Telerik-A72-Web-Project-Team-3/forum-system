@@ -25,22 +25,9 @@
 
                 <div class="topic-list">
                     <!-- Topics -->
-                    <a th:replace="~{PostPreviewFragment:: post-preview(posts=${posts})}"></a>
+                    <a th:replace="~{PostPreviewFragment :: post-preview(posts=${posts})}"></a>
                 </div>
-
-                <div class="folder-pagination" th:if="${pageInfo.totalPages > 1}">
-                    <button
-                            class="btn btn-ghost folder-page-btn"
-                            id="prev-page-btn" th:if="${pageInfo.page > 1}" type="button">‹ Prev
-                    </button>
-                    <span class="folder-page-info">
-                        Page <span th:text="${pageInfo.page}"></span> of <span th:text="${pageInfo.totalPages}"></span>
-                    </span>
-                    <button
-                            class="btn btn-ghost folder-page-btn"
-                            id="next-page-btn" th:if="${pageInfo.page < pageInfo.totalPages}" type="button">Next ›
-                    </button>
-                </div>
+                <div th:replace="~{PostFilterFragment :: post-filter-buttons(pageInfo=${pageInfo})}"></div>
             </section>
         </div>
     </main>

@@ -20,6 +20,7 @@
         </select>
         <select class="tag-select folder-select"
                 name="tagId"
+                th:if="${tags != null}"
                 th:value="${pageInfo.tagId}">
             <option th:selected="${pageInfo.tagId == 0}" value="0">Any tag</option>
             <option th:each="tag: ${tags}" th:selected="${tag.id == tagId}"
@@ -44,5 +45,20 @@
         </select>
     </div>
 </div>
+
+<div class="folder-pagination" th:fragment="post-filter-buttons(pageInfo)" th:if="${pageInfo.totalPages > 1}">
+    <button
+            class="btn btn-ghost folder-page-btn"
+            id="prev-page-btn" th:if="${pageInfo.page > 1}" type="button">‹ Prev
+    </button>
+    <span class="folder-page-info">
+                        Page <span th:text="${pageInfo.page}"></span> of <span th:text="${pageInfo.totalPages}"></span>
+                    </span>
+    <button
+            class="btn btn-ghost folder-page-btn"
+            id="next-page-btn" th:if="${pageInfo.page < pageInfo.totalPages}" type="button">Next ›
+    </button>
+</div>
+
 </body>
 </html>
