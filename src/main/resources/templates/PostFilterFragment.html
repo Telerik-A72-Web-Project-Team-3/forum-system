@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="folder-toolbar" th:fragment="post-filter(pageInfo, tags, tagId, orderBy, direction)">
+    <div class="folder-toolbar-left">
+        <span class="card-title">Posts:</span>
+        <span class="folder-toolbar-meta">Showing
+                            <span th:text="${pageInfo.fromItem}"></span>–<span th:text="${pageInfo.toItem}"></span>
+                                of <span th:text="${pageInfo.totalItems}"></span>
+                            </span>
+    </div>
+    <div class="folder-toolbar-right">
+        <select class="page-select folder-select" hidden name="page" th:value="${pageInfo.page}">
+            <option th:each="page: ${#numbers.sequence(1, pageInfo.totalPages)}"
+                    th:selected="${page == pageInfo.page}"
+                    th:value="${page}">Page <span th:text="${page}"></span>
+            </option>
+        </select>
+        <select class="tag-select folder-select"
+                name="tagId"
+                th:value="${pageInfo.tagId}">
+            <option th:selected="${pageInfo.tagId == 0}" value="0">Any tag</option>
+            <option th:each="tag: ${tags}" th:selected="${tag.id == tagId}"
+                    th:value="${tag.id}">
+                Tag: <span th:text="${tag.name}"></span></option>
+        </select>
+        <select class="order-by-select folder-select"
+                name="orderBy"
+                th:value="${orderBy}">
+            <option th:selected="${orderBy == 'title'}" value="title">Sort by title</option>
+            <option th:selected="${orderBy == 'created_at'}" value="created_at">Sort by newest
+            </option>
+            <option th:selected="${orderBy == 'comments_count'}" value="comments_count">Sort by most
+                replies
+            </option>
+        </select>
+        <select class="sort-order-select folder-select"
+                name="direction"
+                th:value="${direction}">
+            <option th:selected="${direction == 'asc'}" value="asc">ASC</option>
+            <option th:selected="${direction == 'desc'}" value="desc">DESC</option>
+        </select>
+    </div>
+</div>
+</body>
+</html>
