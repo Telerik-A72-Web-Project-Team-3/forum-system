@@ -10,6 +10,7 @@ import com.team3.forum.models.folderDtos.FolderResponseDto;
 import com.team3.forum.models.postDtos.PostCreationDto;
 import com.team3.forum.models.postDtos.PostPage;
 import com.team3.forum.models.postDtos.PostResponseDto;
+import com.team3.forum.models.postDtos.PostUpdateDto;
 import com.team3.forum.models.tagDtos.TagResponseDto;
 import com.team3.forum.security.CustomUserDetails;
 import com.team3.forum.services.*;
@@ -109,6 +110,10 @@ public class PostMvcController {
         if (principal != null) {
             postService.registerView(postId, principal.getId());
         }
+        if (principal != null && principal.isAdmin() || post.getUser().getId() == principal.getId()) {
+            model.addAttribute("canEdit", true);
+        }
+
         model.addAttribute("tags",
                 post.getTags().stream()
                         .map(tag -> TagResponseDto.builder().id(tag.getId()).name(tag.getName()).build())
@@ -234,6 +239,91 @@ public class PostMvcController {
         post = postService.create(post);
         return "redirect:/forum/posts/" + post.getId();
     }
+
+
+    @GetMapping("/{postId}/edit")
+    public String editPostPage(
+            Model model,
+            @PathVariable int postId,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to edit a post!";
+        }
+
+        Post post = postService.findById(postId);
+
+        if (!principal.isAdmin() && post.getUser().getId() != principal.getId()) {
+            return "redirect:/forum/posts/" + postId + "?error=You are not allowed to edit this post.";
+        }
+
+        PostUpdateDto dto = new PostUpdateDto();
+        dto.setTitle(post.getTitle());
+        dto.setContent(post.getContent());
+
+        var tags = post.getTags().stream().toList();
+        if (tags.size() > 0) dto.setTag1(tags.get(0).getName());
+        if (tags.size() > 1) dto.setTag2(tags.get(1).getName());
+        if (tags.size() > 2) dto.setTag3(tags.get(2).getName());
+
+        Folder folder = post.getFolder();
+
+        model.addAttribute("folder", folderMapper.toResponseDto(folder));
+        model.addAttribute("post", dto);
+        model.addAttribute("postId", postId);
+
+        return "EditPostView";
+    }
+
+    @PostMapping("/{postId}/edit")
+    public String updatePost(
+            Model model,
+            @PathVariable int postId,
+            @Valid @ModelAttribute("post") PostUpdateDto postUpdateDto,
+            BindingResult errors,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to edit a post!";
+        }
+
+        Post existing = postService.findById(postId);
+
+        // Authorization: only owner or admin
+        if (!principal.isAdmin() && existing.getUser().getId() != principal.getId()) {
+            return "redirect:/forum/posts/" + postId + "?error=You are not allowed to edit this post.";
+        }
+
+        if (errors.hasErrors()) {
+            model.addAttribute("folder", folderMapper.toResponseDto(existing.getFolder()));
+            model.addAttribute("postId", postId);
+            return "EditPostView";
+        }
+
+        postService.update(postId, postUpdateDto, principal.getId());
+
+        return "redirect:/forum/posts/" + postId;
+    }
+
+    @PostMapping("/{postId}/delete")
+    public String deletePost(
+            @PathVariable int postId,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to delete posts!";
+        }
+
+        try {
+            postService.deleteById(postId, principal.getId());
+            return "redirect:/forum";
+        } catch (AuthorizationException e) {
+            return "ErrorView403";
+        } catch (Exception e) {
+            return "ErrorView404";
+        }
+    }
+
 
     @PostMapping("/{postId}/comments")
     public String createComment(
