@@ -27,6 +27,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/forum/posts")
 public class PostMvcController {
+    private final static int FOLDER_PAGE_SIZE = 5;
+
+
     private final PostService postService;
     private final PostMapper postMapper;
     private final FolderService folderService;
@@ -141,6 +144,8 @@ public class PostMvcController {
     public String createPostPage(
             Model model,
             @RequestParam(defaultValue = "0") int folderId,
+            @RequestParam(defaultValue = "1") int siblingPage,
+            @RequestParam(defaultValue = "1") int childPage,
             @AuthenticationPrincipal CustomUserDetails principal) {
         if (principal == null) {
             return "redirect:/auth/login?error=You must be logged in to create a post!";
@@ -152,6 +157,48 @@ public class PostMvcController {
             folder = folderService.findById(folderId);
         }
 
+        // ---------- SIBLING FOLDERS ----------
+        List<Folder> allSiblingFolders = folderService.getSiblingFolders(folder);
+        int siblingTotal = allSiblingFolders.size();
+        int siblingTotalPages = siblingTotal == 0 ? 1
+                : (int) Math.ceil((double) siblingTotal / FOLDER_PAGE_SIZE);
+
+        siblingPage = Math.max(1, Math.min(siblingPage, siblingTotalPages));
+        int siblingFrom = (siblingPage - 1) * FOLDER_PAGE_SIZE;
+        int siblingTo = Math.min(siblingFrom + FOLDER_PAGE_SIZE, siblingTotal);
+
+        List<FolderResponseDto> siblingFolderResponseDtos = allSiblingFolders
+                .subList(siblingFrom, siblingTo).stream()
+                .map(folderMapper::toResponseDto)
+                .toList();
+
+        model.addAttribute("siblingFolders", siblingFolderResponseDtos);
+        model.addAttribute("siblingPage", siblingPage);
+        model.addAttribute("siblingTotalPages", siblingTotalPages);
+
+        // ---------- CHILD FOLDERS ----------
+        List<Folder> allChildFolders = folder.getChildFolders().stream()
+                .sorted((f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()))
+                .toList();
+
+        int childTotal = allChildFolders.size();
+        int childTotalPages = childTotal == 0 ? 1
+                : (int) Math.ceil((double) childTotal / FOLDER_PAGE_SIZE);
+
+        childPage = Math.max(1, Math.min(childPage, childTotalPages));
+        int childFrom = (childPage - 1) * FOLDER_PAGE_SIZE;
+        int childTo = Math.min(childFrom + FOLDER_PAGE_SIZE, childTotal);
+
+        List<FolderResponseDto> childFolderResponseDtos = allChildFolders
+                .subList(childFrom, childTo).stream()
+                .map(folderMapper::toResponseDto)
+                .toList();
+
+        model.addAttribute("childFolders", childFolderResponseDtos);
+        model.addAttribute("childPage", childPage);
+        model.addAttribute("childTotalPages", childTotalPages);
+
+
         if (folder.getParentFolder() != null) {
             FolderResponseDto parentFolderDto = folderMapper.toResponseDto(folder.getParentFolder());
             model.addAttribute("parent", parentFolderDto);
@@ -159,22 +206,11 @@ public class PostMvcController {
         if (folder.getParentFolder() == null) {
             model.addAttribute("parent", null);
         }
-        List<Folder> siblingFolders = folderService.getSiblingFolders(folder);
-        List<FolderResponseDto> siblingFolderResponseDtos = siblingFolders.stream()
-                .map(folderMapper::toResponseDto).toList();
-
-        model.addAttribute("siblingFolders", siblingFolderResponseDtos);
 
         model.addAttribute("folderName", folder.getName());
 
         model.addAttribute("folder", folderMapper.toResponseDto(folder));
 
-        List<FolderResponseDto> childFolderResponseDtos = folder.getChildFolders().stream()
-                .sorted((f1, f2) -> f1.getName().compareToIgnoreCase(f2.getName()))
-                .map(folderMapper::toResponseDto).toList();
-
-        model.addAttribute("childFolders", childFolderResponseDtos);
-        model.addAttribute("folder", folderMapper.toResponseDto(folder));
         PostCreationDto postCreationDto = new PostCreationDto();
         postCreationDto.setFolderId(folder.getId());
         model.addAttribute("post", postCreationDto);
