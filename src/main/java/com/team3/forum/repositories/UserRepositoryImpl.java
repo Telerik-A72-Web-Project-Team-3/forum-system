@@ -134,11 +134,11 @@ public class UserRepositoryImpl implements UserRepository {
     public List<User> findAllWithFilterPaginated(int page, int size, String searchQuery,
                                                  String statusFilter, String sortBy, String direction) {
 
-        StringBuilder queryString = new StringBuilder("from User u");
+        StringBuilder queryString = new StringBuilder("from User u ");
         queryString.append(buildUserWhereClause(searchQuery, statusFilter));
 
         String orderBy = buildOrderByClause(sortBy, direction);
-        queryString.append(orderBy);
+        queryString.append(" ").append(orderBy);
 
         var query = em.createQuery(queryString.toString(), User.class);
 
@@ -154,7 +154,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public int countUsersWithFilters(String searchQuery, String statusFilter) {
-        StringBuilder queryString = new StringBuilder("from User u");
+        StringBuilder queryString = new StringBuilder(" SELECT COUNT(u) from User u ");
         queryString.append(buildUserWhereClause(searchQuery, statusFilter));
 
         var query = em.createQuery(queryString.toString(), Long.class);
