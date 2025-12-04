@@ -55,6 +55,22 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Post findByIdIncludeDeleted(int id, int requesterId) {
+        User requester = userRepository.findById(requesterId);
+        try {
+            return postRepository.findById(id);
+        } catch (EntityNotFoundException e) {
+            Post persistent = postRepository.findByAndIsDeleted(id);
+            if (requester.isAdmin() || requester.getId() == persistent.getUser().getId()) {
+                return persistent;
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
     public void deleteById(int id, int requesterId) {
         User requester = userRepository.findById(requesterId);
         Post persistent = postRepository.findById(id);

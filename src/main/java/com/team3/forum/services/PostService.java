@@ -12,6 +12,8 @@ public interface PostService {
 
     Post findById(int id);
 
+    Post findByIdIncludeDeleted(int id, int requesterId);
+
     void deleteById(int id, int requesterId);
 
     Post restoreById(int id, int requesterId);

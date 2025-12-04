@@ -106,10 +106,14 @@ public class PostMvcController {
         } else {
             model.addAttribute("sortCommentsBy", "date");
         }
-        Post post = postService.findById(postId);
+        Post post;
         if (principal != null) {
+            post = postService.findByIdIncludeDeleted(postId, principal.getId());
             postService.registerView(postId, principal.getId());
+        } else {
+            post = postService.findById(postId);
         }
+
         if (principal != null && principal.isAdmin() || post.getUser().getId() == principal.getId()) {
             model.addAttribute("canEdit", true);
         }
@@ -317,6 +321,25 @@ public class PostMvcController {
         try {
             postService.deleteById(postId, principal.getId());
             return "redirect:/forum";
+        } catch (AuthorizationException e) {
+            return "ErrorView403";
+        } catch (Exception e) {
+            return "ErrorView404";
+        }
+    }
+
+    @PostMapping("/{postId}/restore")
+    public String restorePost(
+            @PathVariable int postId,
+            @AuthenticationPrincipal CustomUserDetails principal) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to restore posts!";
+        }
+
+        try {
+            postService.restoreById(postId, principal.getId());
+            return "redirect:/forum/posts/" + postId;
         } catch (AuthorizationException e) {
             return "ErrorView403";
         } catch (Exception e) {
