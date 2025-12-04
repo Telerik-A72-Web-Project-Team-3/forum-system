@@ -1,9 +1,14 @@
 package com.team3.forum.controllers.mvc;
 
+import com.team3.forum.exceptions.AuthorizationException;
 import com.team3.forum.helpers.FolderMapper;
 import com.team3.forum.helpers.PostMapper;
 import com.team3.forum.models.Post;
 import com.team3.forum.models.Tag;
+import com.team3.forum.models.User;
+import com.team3.forum.models.Comment;
+import com.team3.forum.models.commentDtos.CommentCreationDto;
+import com.team3.forum.models.commentDtos.CommentUpdateDto;
 import com.team3.forum.models.postDtos.PostCreationDto;
 import com.team3.forum.models.postDtos.PostPage;
 import com.team3.forum.models.postDtos.PostResponseDto;
@@ -12,6 +17,8 @@ import com.team3.forum.security.CustomUserDetails;
 import com.team3.forum.services.FolderService;
 import com.team3.forum.services.PostService;
 import com.team3.forum.services.TagService;
+import com.team3.forum.services.CommentService;
+import com.team3.forum.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -30,14 +38,21 @@ public class PostMvcController {
     private final FolderService folderService;
     private final FolderMapper folderMapper;
     private final TagService tagService;
+    private final CommentService commentService;
+    private final UserService userService;
 
     @Autowired
-    public PostMvcController(PostService postService, PostMapper postMapper, FolderService folderService, FolderMapper folderMapper, TagService tagService) {
+    public PostMvcController(PostService postService, PostMapper postMapper,
+                             FolderService folderService, FolderMapper folderMapper,
+                             TagService tagService, CommentService commentService,
+                             UserService userService) {
         this.postService = postService;
         this.postMapper = postMapper;
         this.folderService = folderService;
         this.folderMapper = folderMapper;
         this.tagService = tagService;
+        this.commentService = commentService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -84,7 +99,9 @@ public class PostMvcController {
             Model model,
             @PathVariable int postId,
             @RequestParam(defaultValue = "date") String sortCommentsBy,
+            @RequestParam(required = false) Integer editCommentId,
             @AuthenticationPrincipal CustomUserDetails principal) {
+
         if (sortCommentsBy.equals("likes")) {
             model.addAttribute("sortCommentsBy", "likes");
         } else {
@@ -101,6 +118,27 @@ public class PostMvcController {
         );
 
         model.addAttribute("post", postMapper.toResponseDto(post));
+        User currentUser = principal != null ? userService.findById(principal.getId()) : null;
+
+        List<Comment> comments;
+        if ("likes".equals(sortCommentsBy)) {
+            comments = commentService.findAllByPostIdWithOrdering(postId, "likes", "desc");
+        } else {
+            comments = commentService.findAllByPostId(postId);
+        }
+
+        comments.forEach(comment -> {
+            comment.getLikedBy().size();
+        });
+
+        model.addAttribute("comments", comments);
+        model.addAttribute("currentUser", currentUser);
+        model.addAttribute("commentCreationDto", new CommentCreationDto());
+
+        if (editCommentId != null) {
+            model.addAttribute("editingCommentId", editCommentId);
+        }
+
         return "PostView";
     }
 
@@ -135,5 +173,122 @@ public class PostMvcController {
         Post post = postMapper.toEntity(postCreationDto, principal.getId());
         post = postService.create(post);
         return "redirect:/forum/posts/" + post.getId();
+    }
+
+    @PostMapping("/{postId}/comments")
+    public String createComment(
+            @PathVariable int postId,
+            @Valid @ModelAttribute("commentCreationDto") CommentCreationDto commentCreationDto,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to comment!";
+        }
+
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("commentError",
+                    "Comment content must be between 2 and 50 characters");
+            return "redirect:/forum/posts/" + postId;
+        }
+
+        try {
+            commentService.createComment(commentCreationDto, postId, principal.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Comment posted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to post comment: " + e.getMessage());
+        }
+
+        return "redirect:/forum/posts/" + postId;
+    }
+
+    @PostMapping("/{postId}/comments/{commentId}/like")
+    public String likeComment(
+            @PathVariable int postId,
+            @PathVariable int commentId,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to like comments!";
+        }
+
+        try {
+            commentService.likeComment(commentId, principal.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Comment liked!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to like comment: " + e.getMessage());
+        }
+
+        return "redirect:/forum/posts/" + postId;
+    }
+
+    @PostMapping("/{postId}/comments/{commentId}/unlike")
+    public String unlikeComment(
+            @PathVariable int postId,
+            @PathVariable int commentId,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to unlike comments!";
+        }
+
+        try {
+            commentService.unlikeComment(commentId, principal.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Comment unliked!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to unlike comment: " + e.getMessage());
+        }
+
+        return "redirect:/forum/posts/" + postId;
+    }
+
+    @PostMapping("/{postId}/comments/{commentId}/edit")
+    public String editComment(
+            @PathVariable int postId,
+            @PathVariable int commentId,
+            @RequestParam String content,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to edit comments!";
+        }
+
+        try {
+            CommentUpdateDto commentUpdateDto = new CommentUpdateDto();
+            commentUpdateDto.setContent(content);
+            commentService.updateComment(commentId, commentUpdateDto, principal.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Comment updated successfully!");
+        } catch (AuthorizationException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You are not authorized to edit this comment.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update comment: " + e.getMessage());
+        }
+
+        return "redirect:/forum/posts/" + postId;
+    }
+
+    @PostMapping("/{postId}/comments/{commentId}/delete")
+    public String deleteComment(
+            @PathVariable int postId,
+            @PathVariable int commentId,
+            @AuthenticationPrincipal CustomUserDetails principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            return "redirect:/auth/login?error=You must be logged in to delete comments!";
+        }
+
+        try {
+            commentService.deleteById(commentId, principal.getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Comment deleted successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete comment: " + e.getMessage());
+        }
+
+        return "redirect:/forum/posts/" + postId;
     }
 }
