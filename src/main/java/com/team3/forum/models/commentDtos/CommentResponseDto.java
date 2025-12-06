@@ -1,8 +1,10 @@
 package com.team3.forum.models.commentDtos;
 
+import com.team3.forum.models.User;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -20,4 +22,9 @@ public class CommentResponseDto {
     private LocalDateTime deletedAt;
     private int likesCount;
     private boolean likedByCurrentUser;
+    private String createdAtString;
+    private String editedAtString;
+    private User user;
+    private String username;
+    private Set<User> likedBy;
 }

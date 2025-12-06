@@ -5,10 +5,23 @@ import com.team3.forum.models.Post;
 import com.team3.forum.models.User;
 import com.team3.forum.models.commentDtos.CommentCreationDto;
 import com.team3.forum.models.commentDtos.CommentResponseDto;
+import com.team3.forum.repositories.PostRepository;
+import com.team3.forum.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 public class CommentMapper {
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+
+    @Autowired
+    public CommentMapper(PostRepository postRepository, UserRepository userRepository) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+    }
 
     public Comment toEntity(CommentCreationDto dto, int postId, int userId) {
         Comment comment = new Comment();
@@ -25,7 +38,21 @@ public class CommentMapper {
         return comment;
     }
 
-    public CommentResponseDto convertToDto(Comment comment) {
+    public CommentResponseDto toResponseDto(Comment comment, User currentUser) {
+        String createdAtString = TimeAgo.toTimeAgo(comment.getCreatedAt());
+
+        String editedAtString = null;
+        LocalDateTime updatedAt = comment.getUpdatedAt();
+        if (updatedAt != null && !comment.getCreatedAt().isEqual(updatedAt)) {
+            editedAtString = "Edited · " + TimeAgo.toTimeAgo(updatedAt);
+        }
+
+        boolean likedByCurrentUser = false;
+        if (currentUser != null) {
+            likedByCurrentUser = comment.getLikedBy().stream()
+                    .anyMatch(user -> user.getId() == currentUser.getId());
+        }
+
         return CommentResponseDto.builder()
                 .id(comment.getId())
                 .postId(comment.getPost().getId())
@@ -36,6 +63,12 @@ public class CommentMapper {
                 .isDeleted(comment.isDeleted())
                 .deletedAt(comment.getDeletedAt())
                 .likesCount(comment.getLikedBy().size())
+                .likedByCurrentUser(likedByCurrentUser)
+                .createdAtString(createdAtString)
+                .editedAtString(editedAtString)
+                .user(comment.getUser())
+                .username(comment.getUser().getUsername())
+                .likedBy(comment.getLikedBy())
                 .build();
     }
 }

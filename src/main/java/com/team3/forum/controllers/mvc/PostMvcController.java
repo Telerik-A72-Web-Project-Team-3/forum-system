@@ -1,11 +1,13 @@
 package com.team3.forum.controllers.mvc;
 
 import com.team3.forum.exceptions.AuthorizationException;
+import com.team3.forum.helpers.CommentMapper;
 import com.team3.forum.helpers.FolderMapper;
 import com.team3.forum.helpers.FolderPageHelper;
 import com.team3.forum.helpers.PostMapper;
 import com.team3.forum.models.*;
 import com.team3.forum.models.commentDtos.CommentCreationDto;
+import com.team3.forum.models.commentDtos.CommentResponseDto;
 import com.team3.forum.models.commentDtos.CommentUpdateDto;
 import com.team3.forum.models.postDtos.PostCreationDto;
 import com.team3.forum.models.postDtos.PostPage;
@@ -36,7 +38,7 @@ public class PostMvcController {
     private final TagService tagService;
     private final CommentService commentService;
     private final UserService userService;
-
+    private final CommentMapper commentMapper;
     private final FolderPageHelper folderPageHelper;
 
     @Autowired
@@ -44,7 +46,7 @@ public class PostMvcController {
                              FolderService folderService, FolderMapper folderMapper,
                              TagService tagService, CommentService commentService,
                              UserService userService,
-                             FolderPageHelper folderPageHelper) {
+                             FolderPageHelper folderPageHelper, CommentMapper commentMapper) {
         this.postService = postService;
         this.postMapper = postMapper;
         this.folderService = folderService;
@@ -53,6 +55,7 @@ public class PostMvcController {
         this.commentService = commentService;
         this.userService = userService;
         this.folderPageHelper = folderPageHelper;
+        this.commentMapper = commentMapper;
     }
 
     @GetMapping
@@ -99,6 +102,8 @@ public class PostMvcController {
             Model model,
             @PathVariable int postId,
             @RequestParam(defaultValue = "date") String sortCommentsBy,
+            @RequestParam(defaultValue = "0") int commentPage,
+            @RequestParam(defaultValue = "10") int commentSize,
             @RequestParam(required = false) Integer editCommentId,
             @AuthenticationPrincipal CustomUserDetails principal) {
 
@@ -135,11 +140,34 @@ public class PostMvcController {
             comments = commentService.findAllByPostId(postId);
         }
 
-        comments.forEach(comment -> {
+        int totalComments = comments.size();
+        int totalPages = (int) Math.ceil((double) totalComments / commentSize);
+        int start = commentPage * commentSize;
+        int end = Math.min(start + commentSize, totalComments);
+
+        List<Comment> paginatedComments;
+        if (start >= totalComments) {
+            paginatedComments = List.of();
+        } else {
+            paginatedComments = comments.subList(start, end);
+        }
+
+        paginatedComments.forEach(comment -> {
             comment.getLikedBy().size();
         });
 
-        model.addAttribute("comments", comments);
+
+        List<CommentResponseDto> commentDtos = paginatedComments.stream()
+                .map(comment -> commentMapper.toResponseDto(comment, currentUser))
+                .toList();
+
+        model.addAttribute("comments", commentDtos);
+        model.addAttribute("commentPage", commentPage);
+        model.addAttribute("commentTotalPages", totalPages);
+        model.addAttribute("commentFromItem", start + 1); // 1-based for display
+        model.addAttribute("commentToItem", end);
+        model.addAttribute("commentTotalItems", totalComments);
+
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("commentCreationDto", new CommentCreationDto());
 
@@ -242,7 +270,6 @@ public class PostMvcController {
 
         Post existing = postService.findById(postId);
 
-        // Authorization: only owner or admin
         if (!principal.isAdmin() && existing.getUser().getId() != principal.getId()) {
             return "redirect:/forum/posts/" + postId + "?error=You are not allowed to edit this post.";
         }
