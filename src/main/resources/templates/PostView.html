@@ -94,13 +94,15 @@
                                 <form method="get" th:action="@{/forum/posts/{id}(id=${post.id})}">
                                     <select class="comment-order-by folder-select"
                                             name="sortCommentsBy"
-                                            th:value="${sortCommentsBy}"
                                             onchange="this.form.submit()">
-                                        <option value="date">Sort by newest</option>
-                                        <option value="likes">Sort by most likes</option>
+                                        <option value="date" th:selected="${sortCommentsBy == 'date'}">Sort by newest</option>
+                                        <option value="likes" th:selected="${sortCommentsBy == 'likes'}">Sort by most likes</option>
                                     </select>
                                     <input type="hidden" name="commentPage" th:value="${commentPage}" id="comment-page-input"/>
                                     <input type="hidden" name="commentSize" value="10"/>
+
+                                    <!-- Preserve editCommentId if it exists -->
+                                    <input type="hidden" name="editCommentId" th:if="${editCommentId}" th:value="${editCommentId}"/>
                                 </form>
                             </div>
                         </div>
@@ -109,7 +111,7 @@
                     <!-- COMMENT FORM (visible when logged in) -->
                     <div class="comment-form" sec:authorize="isAuthenticated()">
                         <div class="comment-form-header">
-                            <span class="comment-form-avatar" th:text="${#strings.substring(currentUser.username, 0, 1)}">M</span>
+                        <span class="comment-form-avatar" th:text="${#strings.substring(currentUser.firstName, 0, 1)}">M</span>
                             <div class="comment-form-meta">
                                 <div class="comment-form-user" sec:authentication="name">You</div>
                                 <div class="comment-form-hint">Share your thoughts about this discussion.</div>
@@ -139,7 +141,7 @@
                         <!-- Comment Template -->
                         <article class="comment" th:each="comment : ${comments}">
                             <header class="comment-header">
-                                <div class="comment-avatar" th:text="${#strings.substring(comment.user.username, 0, 1)}">A</div>
+                                <div class="comment-avatar" th:text="${comment.user.firstName != null ? #strings.substring(comment.user.firstName, 0, 1) : #strings.substring(comment.user.username, 0, 1)}">A</div>
                                 <div class="comment-header-main">
                                     <div class="comment-author-row">
                                         <span class="comment-author" th:text="${comment.user.username}">ana</span>
@@ -179,11 +181,6 @@
                                 </div>
                             </div>
                             <footer class="comment-footer">
-                                <!-- Reply -->
-                                <button class="comment-action" type="button">Reply</button>
-
-                                <!-- Report -->
-                                <button class="comment-action" type="button">Report</button>
 
                                 <!-- Like/Unlike buttons -->
                                 <div style="display: inline;">
@@ -275,6 +272,12 @@
                     form.submit();
                 }
             });
+
+            // When changing sort order, reset to first page
+            $('select[name="sortCommentsBy"]').on('change', function() {
+                $('#comment-page-input').val(0);
+            });
         }
     });
+
 </script>
