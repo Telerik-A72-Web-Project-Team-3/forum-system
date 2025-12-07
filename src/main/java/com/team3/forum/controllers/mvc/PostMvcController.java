@@ -249,7 +249,7 @@ public class PostMvcController {
 
         Post post = postService.findById(postId);
 
-        if (!principal.isAdmin() && post.getUser().getId() != principal.getId()) {
+        if (!principal.isModerator() && post.getUser().getId() != principal.getId()) {
             return "redirect:/forum/posts/" + postId + "?error=You are not allowed to edit this post.";
         }
 
