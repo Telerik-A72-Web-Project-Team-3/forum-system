@@ -13,4 +13,8 @@ public interface TagRepository {
     void delete(Tag entity);
 
     List<Tag> findTopByOrderByPostsCountDesc(int limit);
+
+    Tag findByName(String name);
+
+    boolean existsByName(String name);
 }

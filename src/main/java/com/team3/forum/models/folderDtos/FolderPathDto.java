@@ -12,4 +12,5 @@ public class FolderPathDto {
     private String path;
     private String slug;
     private String name;
+    private String description;
 }

@@ -62,4 +62,18 @@ public class TagRepositoryImpl implements TagRepository {
                 .setMaxResults(limit)
                 .getResultList();
     }
+
+    @Override
+    public Tag findByName(String name) {
+        return em.createQuery("from Tag t where t.name = :name", Tag.class)
+                .setParameter("name", name)
+                .getSingleResult();
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        return em.createQuery("select count(t) from Tag t where t.name = :name", Long.class)
+                .setParameter("name", name)
+                .getSingleResult() > 0;
+    }
 }

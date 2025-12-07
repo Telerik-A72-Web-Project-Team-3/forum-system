@@ -50,7 +50,11 @@
                             <input class="form-input" id="post-tags-1"
                                    placeholder="e.g. star wars"
                                    th:field="*{tag1}"
-                                   type="text"/>
+                                   list="all-tags"
+                                   type="search"/>
+                            <datalist id="all-tags">
+                                <option th:each="tag: ${tags}" th:text="${tag.name}"></option>
+                            </datalist>
                             <div class="field-error" th:errors="*{tag1}"></div>
                             <br/><br/>
 
@@ -58,7 +62,8 @@
                             <input class="form-input" id="post-tags-2"
                                    placeholder="e.g. andor"
                                    th:field="*{tag2}"
-                                   type="text"/>
+                                   list="all-tags"
+                                   type="search"/>
                             <div class="field-error" th:errors="*{tag2}"></div>
                             <br/><br/>
 
@@ -66,14 +71,13 @@
                             <input class="form-input" id="post-tags-3"
                                    placeholder="e.g. tv show"
                                    th:field="*{tag3}"
-                                   type="text"/>
+                                   list="all-tags"
+                                   type="search"/>
                             <div class="field-error" th:errors="*{tag3}"></div>
                             <p class="form-help">
                                 Enter up to three tags to help others find your topic.
                             </p>
                         </div>
-
-                        <!-- NO folderId input here on purpose -->
 
                         <div class="form-actions">
                             <button class="btn btn-primary" type="submit">Save changes</button>
@@ -88,4 +92,9 @@
         </div>
     </main>
 </section>
+
+<th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+    </script>
+</th:block>
 </html>

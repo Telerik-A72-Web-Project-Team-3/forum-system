@@ -26,14 +26,14 @@ public class PostCreationDto {
     private int folderId;
 
     @Size(max = 50, message = "Tag must be less than 50 characters")
-    @Pattern(regexp = "[A-Za-z]{0,50}", message = "Tag must be one word containing only letters")
+    @Pattern(regexp = "[a-z0-9-]{0,50}", message = "Tag must be one word containing only letters, numbers and dash")
     private String tag1;
 
     @Size(max = 50, message = "Tag must be less than 50 characters")
-    @Pattern(regexp = "[A-Za-z]{0,50}", message = "Tag must be one word containing only letters")
+    @Pattern(regexp = "[a-z0-9-]{0,50}", message = "Tag must be one word containing only letters, numbers and dash")
     private String tag2;
 
     @Size(max = 50, message = "Tag must be less than 50 characters")
-    @Pattern(regexp = "[A-Za-z]{0,50}", message = "Tag must be one word containing only letters")
+    @Pattern(regexp = "[a-z0-9-]{0,50}", message = "Tag must be one word containing only letters, numbers and dash")
     private String tag3;
 }
