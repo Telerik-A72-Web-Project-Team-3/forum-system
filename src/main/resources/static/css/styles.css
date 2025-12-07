@@ -1739,3 +1739,8 @@ a.btn {
     justify-content: center;
     padding: 0.4rem 0.95rem;
 }
+.comment-name-row {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+}
