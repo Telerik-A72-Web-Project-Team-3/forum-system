@@ -9,22 +9,21 @@ import com.team3.forum.helpers.TimeAgo;
 import com.team3.forum.helpers.UserMapper;
 import com.team3.forum.models.Folder;
 import com.team3.forum.models.Post;
+import com.team3.forum.models.Tag;
 import com.team3.forum.models.User;
 import com.team3.forum.models.enums.PostSortField;
 import com.team3.forum.models.enums.Role;
 import com.team3.forum.models.enums.SortDirection;
 import com.team3.forum.models.postDtos.*;
 import com.team3.forum.models.tagDtos.TagResponseDto;
-import com.team3.forum.repositories.FolderRepository;
-import com.team3.forum.repositories.PostRepository;
-import com.team3.forum.repositories.PostViewRepository;
-import com.team3.forum.repositories.UserRepository;
+import com.team3.forum.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -44,9 +43,17 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
     private final UserMapper userMapper;
+    private final TagRepository tagRepository;
 
     @Autowired
-    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository, FolderRepository folderRepository, PostViewRepository postViewRepository, PostMapper postMapper, CommentMapper commentMapper, UserMapper userMapper) {
+    public PostServiceImpl(PostRepository postRepository,
+                           UserRepository userRepository,
+                           FolderRepository folderRepository,
+                           PostViewRepository postViewRepository,
+                           PostMapper postMapper,
+                           CommentMapper commentMapper,
+                           UserMapper userMapper,
+                           TagRepository tagRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.folderRepository = folderRepository;
@@ -54,6 +61,7 @@ public class PostServiceImpl implements PostService {
         this.postMapper = postMapper;
         this.commentMapper = commentMapper;
         this.userMapper = userMapper;
+        this.tagRepository = tagRepository;
     }
 
     @Override
@@ -121,6 +129,8 @@ public class PostServiceImpl implements PostService {
         Post post = postMapper.toEntity(postCreationDto);
         post.setFolder(folderRepository.findById(postCreationDto.getFolderId()));
         post.setUser(userRepository.findById(userId));
+        List<String> tagsToAdd = List.of(postCreationDto.getTag1(), postCreationDto.getTag2(), postCreationDto.getTag3());
+        setTags(post, tagsToAdd);
         return postRepository.save(post);
     }
 
@@ -135,6 +145,9 @@ public class PostServiceImpl implements PostService {
 
         persistent.setTitle(postUpdateDto.getTitle());
         persistent.setContent(postUpdateDto.getContent());
+        persistent.setTags(new HashSet<>());
+        List<String> tagsToAdd = List.of(postUpdateDto.getTag1(), postUpdateDto.getTag2(), postUpdateDto.getTag3());
+        setTags(persistent, tagsToAdd);
 
         return postRepository.save(persistent);
     }
@@ -237,6 +250,21 @@ public class PostServiceImpl implements PostService {
     public PostResponseDto buildPostResponseDto(Post post) {
         Post persistent = findByIdIncludeDeleted(post.getId(), post.getUser().getId());
         return postMapper.toResponseDto(persistent, buildPostCalculatedStatsDto(persistent));
+    }
+
+    private void setTags(Post post, List<String> tags) {
+        for (String tag : tags) {
+            if (tag != null && !tag.isEmpty()) {
+                if (!tagRepository.existsByName(tag)) {
+                    Tag newTag = new Tag();
+                    newTag.setName(tag);
+                    tagRepository.save(newTag);
+                    post.getTags().add(newTag);
+                } else {
+                    post.getTags().add(tagRepository.findByName(tag));
+                }
+            }
+        }
     }
 
     private void verifyModeratorOrOwner(Post post, User requester, RuntimeException error) {

@@ -72,7 +72,6 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Folder create(FolderCreateDto folderCreateDto, List<String> slugs, int requesterId) {
-        int parentId = folderCreateDto.getParentFolderId();
         if (slugs.isEmpty()) {
             throw new EntityUpdateConflictException(CREATE_NO_SLUGS_ERROR);
         }
@@ -259,13 +258,7 @@ public class FolderServiceImpl implements FolderService {
         if (folder.getParentFolder() != null) {
             buildPathFolders(folder.getParentFolder(), result);
         }
-        result.add(
-                FolderPathDto.builder()
-                        .path(buildPath(folder, ""))
-                        .slug(folder.getSlug())
-                        .name(folder.getName())
-                        .build()
-        );
+        result.add(folderMapper.toPathDto(folder));
         return result;
     }
 

@@ -179,21 +179,27 @@
                                 <input class="form-input" id="post-tags-1" name="tags"
                                        placeholder="e.g. star wars"
                                        th:field="*{tag1}"
-                                       type="text"/>
+                                       list="all-tags"
+                                       type="search"/>
+                                <datalist id="all-tags">
+                                    <option th:each="tag: ${tags}" th:text="${tag.name}"></option>
+                                </datalist>
                                 <div class="field-error" th:errors="*{tag1}"></div>
                                 <br/><br/>
                                 <label class="form-label" for="post-tags-2">Tag 2 <span>(optional)</span></label>
                                 <input class="form-input" id="post-tags-2" name="tags"
                                        placeholder="e.g. andor"
                                        th:field="*{tag2}"
-                                       type="text"/>
+                                       list="all-tags"
+                                       type="search"/>
                                 <div class="field-error" th:errors="*{tag2}"></div>
                                 <br/><br/>
                                 <label class="form-label" for="post-tags-3">Tag 3 <span>(optional)</span></label>
                                 <input class="form-input" id="post-tags-3" name="tags"
                                        placeholder="e.g. tv show"
                                        th:field="*{tag3}"
-                                       type="text"/>
+                                       list="all-tags"
+                                       type="search"/>
                                 <div class="field-error" th:errors="*{tag3}"></div>
                                 <p class="form-help">
                                     Enter up to three tags to help others find your topic.

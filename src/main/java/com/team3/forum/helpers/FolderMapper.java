@@ -20,6 +20,7 @@ public class FolderMapper {
         return FolderPathDto.builder()
                 .name(folder.getName())
                 .slug(folder.getSlug())
+                .description(folder.getDescription())
                 .path(buildPath(folder, ""))
                 .build();
     }

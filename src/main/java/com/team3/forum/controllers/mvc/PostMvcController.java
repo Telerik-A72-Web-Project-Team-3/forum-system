@@ -2,8 +2,8 @@ package com.team3.forum.controllers.mvc;
 
 import com.team3.forum.exceptions.AuthorizationException;
 import com.team3.forum.helpers.CommentMapper;
-import com.team3.forum.helpers.FolderMapper;
 import com.team3.forum.helpers.FolderPageHelper;
+import com.team3.forum.helpers.PostMapper;
 import com.team3.forum.helpers.UserMapper;
 import com.team3.forum.models.*;
 import com.team3.forum.models.commentDtos.CommentCreationDto;
@@ -25,6 +25,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -33,33 +34,33 @@ public class PostMvcController {
 
     private final PostService postService;
     private final FolderService folderService;
-    private final FolderMapper folderMapper;
     private final TagService tagService;
     private final CommentService commentService;
     private final UserService userService;
     private final CommentMapper commentMapper;
     private final FolderPageHelper folderPageHelper;
     private final UserMapper userMapper;
+    private final PostMapper postMapper;
 
     @Autowired
     public PostMvcController(PostService postService,
                              FolderService folderService,
-                             FolderMapper folderMapper,
                              TagService tagService,
                              CommentService commentService,
                              UserService userService,
                              FolderPageHelper folderPageHelper,
                              CommentMapper commentMapper,
-                             UserMapper userMapper) {
+                             UserMapper userMapper,
+                             PostMapper postMapper) {
         this.postService = postService;
         this.folderService = folderService;
-        this.folderMapper = folderMapper;
         this.tagService = tagService;
         this.commentService = commentService;
         this.userService = userService;
         this.folderPageHelper = folderPageHelper;
         this.commentMapper = commentMapper;
         this.userMapper = userMapper;
+        this.postMapper = postMapper;
     }
 
     @GetMapping
@@ -194,7 +195,7 @@ public class PostMvcController {
         if (principal == null) {
             return "redirect:/auth/login?error=You must be logged in to create a post!";
         }
-        Folder folder = null;
+        Folder folder;
         if (folderId == 0) {
             folder = folderService.findHomeFolders().get(0);
         } else {
@@ -206,6 +207,7 @@ public class PostMvcController {
         PostCreationDto postCreationDto = new PostCreationDto();
         postCreationDto.setFolderId(folder.getId());
         model.addAttribute("post", postCreationDto);
+        model.addAttribute("tags", tagService.findAll());
         return "CreatePostView";
     }
 
@@ -216,7 +218,11 @@ public class PostMvcController {
             BindingResult errors,
             @AuthenticationPrincipal CustomUserDetails principal) {
         if (errors.hasErrors()) {
-            model.addAttribute("folder", folderMapper.toPathDto(folderService.findById(postCreationDto.getFolderId())));
+            Folder folder = folderService.findById(postCreationDto.getFolderId());
+            folderPageHelper.populateSidebar(folder, 1, 1, model);
+            postCreationDto.setFolderId(folder.getId());
+            model.addAttribute("post", postCreationDto);
+            model.addAttribute("tags", tagService.findAll());
             return "CreatePostView";
         }
         if (principal == null) {
@@ -244,20 +250,14 @@ public class PostMvcController {
             return "redirect:/forum/posts/" + postId + "?error=You are not allowed to edit this post.";
         }
 
-        PostUpdateDto dto = new PostUpdateDto();
-        dto.setTitle(post.getTitle());
-        dto.setContent(post.getContent());
-
-        var tags = post.getTags().stream().toList();
-        if (tags.size() > 0) dto.setTag1(tags.get(0).getName());
-        if (tags.size() > 1) dto.setTag2(tags.get(1).getName());
-        if (tags.size() > 2) dto.setTag3(tags.get(2).getName());
+        PostUpdateDto dto = postMapper.toUpdateDto(post);
 
         Folder folder = post.getFolder();
-
+        List<Tag> allTags = tagService.findAll().stream().sorted(Comparator.comparing(Tag::getName)).toList();
         model.addAttribute("folder", folderService.buildFolderResponseDto(folder));
         model.addAttribute("post", dto);
         model.addAttribute("postId", postId);
+        model.addAttribute("tags", allTags);
 
         return "EditPostView";
     }
@@ -283,6 +283,7 @@ public class PostMvcController {
         if (errors.hasErrors()) {
             model.addAttribute("folder", folderService.buildFolderResponseDto(existing.getFolder()));
             model.addAttribute("postId", postId);
+            model.addAttribute("tags", tagService.findAll());
             return "EditPostView";
         }
 
