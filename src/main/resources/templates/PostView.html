@@ -148,6 +148,11 @@
                                         <span class="comment-badge comment-badge-admin" th:if="${comment.user.role.name() == 'ADMIN'}">Admin</span>
                                         <span class="comment-badge comment-badge-mod" th:if="${comment.user.role.name() == 'MODERATOR'}">Moderator</span>
                                     </div>
+                                    <div class="comment-name-row" th:if="${comment.user.firstName != null && !comment.user.firstName.isEmpty()}">
+                                        <span class="comment-realname" th:text="${comment.user.firstName}"></span>
+                                        <span th:if="${comment.user.lastName != null && !comment.user.lastName.isEmpty()}"
+                                              th:text="' ' + ${comment.user.lastName}"></span>
+                                    </div>
                                     <div class="comment-meta">
                                         <span th:text="${comment.createdAtString}"></span>
                                         <span th:if="${comment.editedAtString != null}"> · </span>
