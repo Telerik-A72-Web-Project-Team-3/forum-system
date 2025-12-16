@@ -1,32 +1,30 @@
-USE forum;
-
 -- ============================================
 -- OPTIONAL: CLEAR EXISTING DATA FOR A CLEAN SEED
 -- ============================================
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE forum.comment_likes;
-TRUNCATE TABLE forum.likes;
-TRUNCATE TABLE forum.posts_users_views;
-TRUNCATE TABLE forum.tags_posts;
-TRUNCATE TABLE forum.comments;
-TRUNCATE TABLE forum.posts;
-TRUNCATE TABLE forum.tags;
-TRUNCATE TABLE forum.folders;
-TRUNCATE TABLE forum.users;
+TRUNCATE TABLE comment_likes;
+TRUNCATE TABLE likes;
+TRUNCATE TABLE posts_users_views;
+TRUNCATE TABLE tags_posts;
+TRUNCATE TABLE comments;
+TRUNCATE TABLE posts;
+TRUNCATE TABLE tags;
+TRUNCATE TABLE folders;
+TRUNCATE TABLE users;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
 -- ROOT + MOVIES + SERIES FOLDERS
 -- ============================================
-INSERT INTO forum.folders (folder_id, parent_id, name, slug, created_at)
+INSERT INTO folders (folder_id, parent_id, name, slug, created_at)
 VALUES (1, NULL, 'Root', 'root', '2023-01-01 10:00:00'),
        (2, 1, 'Movies', 'movies', '2023-01-03 10:00:00'),
        (3, 1, 'Series', 'series', '2023-01-03 10:05:00');
 
 -- 15 movie folders under Movies (folder_id = 2)
-INSERT INTO forum.folders (folder_id, parent_id, name, slug, created_at)
+INSERT INTO folders (folder_id, parent_id, name, slug, created_at)
 VALUES (4, 2, 'The Matrix', 'the-matrix', '2023-01-10 09:00:00'),
        (5, 2, 'Inception', 'inception', '2023-01-11 09:00:00'),
        (6, 2, 'Interstellar', 'interstellar', '2023-01-12 09:00:00'),
@@ -44,7 +42,7 @@ VALUES (4, 2, 'The Matrix', 'the-matrix', '2023-01-10 09:00:00'),
        (18, 2, 'Blade Runner 2049', 'blade-runner-2049', '2023-01-24 09:00:00');
 
 -- 15 series folders under Series (folder_id = 3)
-INSERT INTO forum.folders (folder_id, parent_id, name, slug, created_at)
+INSERT INTO folders (folder_id, parent_id, name, slug, created_at)
 VALUES (19, 3, 'Breaking Bad', 'breaking-bad', '2023-02-01 09:00:00'),
        (20, 3, 'Game of Thrones', 'game-of-thrones', '2023-02-02 09:00:00'),
        (21, 3, 'The Office (US)', 'the-office-us', '2023-02-03 09:00:00'),
@@ -64,7 +62,7 @@ VALUES (19, 3, 'Breaking Bad', 'breaking-bad', '2023-02-01 09:00:00'),
 -- ============================================
 -- TAGS (NON-GENRE)
 -- ============================================
-INSERT INTO forum.tags (tag_id, name)
+INSERT INTO tags (tag_id, name)
 VALUES (1, 'rewatch-worthy'),
        (2, 'slow-burn'),
        (3, 'character-driven'),
@@ -75,60 +73,63 @@ VALUES (1, 'rewatch-worthy'),
        (8, 'comfort-watch');
 
 -- ============================================
--- USERS: 5 ADMINS + 40 REGULAR USERS
+-- USERS: 3 ADMINS + 5 MODERATORS + 37 REGULAR USERS
 -- ============================================
 SET @pw := '$2a$10$CZE9.LfucJLVP/hlp6IVbuoFUFE1scio7eYPI4145i1wGU4JmukVi';
 
--- Admins (1–5)
-INSERT INTO forum.users (user_id, first_name, last_name, username, email, password, is_admin, created_at)
-VALUES (1, 'Alex', 'Adminson', 'admin1', 'admin1@example.com', @pw, 1, '2023-01-05 09:00:00'),
-       (2, 'Brian', 'Adminson', 'admin2', 'admin2@example.com', @pw, 1, '2023-01-06 09:00:00'),
-       (3, 'Clara', 'Adminson', 'admin3', 'admin3@example.com', @pw, 1, '2023-01-07 09:00:00'),
-       (4, 'Diana', 'Adminson', 'admin4', 'admin4@example.com', @pw, 1, '2023-01-08 09:00:00'),
-       (5, 'Ethan', 'Adminson', 'admin5', 'admin5@example.com', @pw, 1, '2023-01-09 09:00:00');
+-- Admins (1–3)
+INSERT INTO users (user_id, first_name, last_name, username, email, password, role, created_at)
+VALUES (1, 'Alex', 'Adminson', 'admin1', 'admin1@example.com', @pw, 'ADMIN', '2023-01-05 09:00:00'),
+       (2, 'Brian', 'Adminson', 'admin2', 'admin2@example.com', @pw, 'ADMIN', '2023-01-06 09:00:00'),
+       (3, 'Clara', 'Adminson', 'admin3', 'admin3@example.com', @pw, 'ADMIN', '2023-01-07 09:00:00');
 
--- Regular users (6–45)
-INSERT INTO forum.users (user_id, first_name, last_name, username, email, password, is_admin, created_at)
-VALUES (6, 'Felix', 'Walker', 'user06', 'user06@example.com', @pw, 0, '2023-01-10 10:00:00'),
-       (7, 'Grace', 'Walker', 'user07', 'user07@example.com', @pw, 0, '2023-01-11 10:00:00'),
-       (8, 'Henry', 'Bennett', 'user08', 'user08@example.com', @pw, 0, '2023-01-12 10:00:00'),
-       (9, 'Irene', 'Bennett', 'user09', 'user09@example.com', @pw, 0, '2023-01-13 10:00:00'),
-       (10, 'Jonas', 'Cooper', 'user10', 'user10@example.com', @pw, 0, '2023-01-14 10:00:00'),
-       (11, 'Karen', 'Cooper', 'user11', 'user11@example.com', @pw, 0, '2023-01-15 10:00:00'),
-       (12, 'Liam', 'Foster', 'user12', 'user12@example.com', @pw, 0, '2023-01-16 10:00:00'),
-       (13, 'Marta', 'Foster', 'user13', 'user13@example.com', @pw, 0, '2023-01-17 10:00:00'),
-       (14, 'Noah', 'Granger', 'user14', 'user14@example.com', @pw, 0, '2023-01-18 10:00:00'),
-       (15, 'Olga', 'Granger', 'user15', 'user15@example.com', @pw, 0, '2023-01-19 10:00:00'),
-       (16, 'Peter', 'Harper', 'user16', 'user16@example.com', @pw, 0, '2023-01-20 10:00:00'),
-       (17, 'Quinn', 'Harper', 'user17', 'user17@example.com', @pw, 0, '2023-01-21 10:00:00'),
-       (18, 'Riley', 'Iverson', 'user18', 'user18@example.com', @pw, 0, '2023-01-22 10:00:00'),
-       (19, 'Sofia', 'Iverson', 'user19', 'user19@example.com', @pw, 0, '2023-01-23 10:00:00'),
-       (20, 'Tomas', 'Johnson', 'user20', 'user20@example.com', @pw, 0, '2023-01-24 10:00:00'),
-       (21, 'Ulrich', 'Johnson', 'user21', 'user21@example.com', @pw, 0, '2023-01-25 10:00:00'),
-       (22, 'Vera', 'Kingston', 'user22', 'user22@example.com', @pw, 0, '2023-01-26 10:00:00'),
-       (23, 'Wendy', 'Kingston', 'user23', 'user23@example.com', @pw, 0, '2023-01-27 10:00:00'),
-       (24, 'Xenia', 'Lewis', 'user24', 'user24@example.com', @pw, 0, '2023-01-28 10:00:00'),
-       (25, 'Yanis', 'Lewis', 'user25', 'user25@example.com', @pw, 0, '2023-01-29 10:00:00'),
-       (26, 'Zoran', 'Miller', 'user26', 'user26@example.com', @pw, 0, '2023-01-30 10:00:00'),
-       (27, 'Amira', 'Miller', 'user27', 'user27@example.com', @pw, 0, '2023-01-31 10:00:00'),
-       (28, 'Bianca', 'Nelson', 'user28', 'user28@example.com', @pw, 0, '2023-02-01 10:00:00'),
-       (29, 'Caleb', 'Nelson', 'user29', 'user29@example.com', @pw, 0, '2023-02-02 10:00:00'),
-       (30, 'Derek', 'Owenson', 'user30', 'user30@example.com', @pw, 0, '2023-02-03 10:00:00'),
-       (31, 'Elena', 'Owenson', 'user31', 'user31@example.com', @pw, 0, '2023-02-04 10:00:00'),
-       (32, 'Fabio', 'Patterson', 'user32', 'user32@example.com', @pw, 0, '2023-02-05 10:00:00'),
-       (33, 'Greta', 'Patterson', 'user33', 'user33@example.com', @pw, 0, '2023-02-06 10:00:00'),
-       (34, 'Helga', 'Quentin', 'user34', 'user34@example.com', @pw, 0, '2023-02-07 10:00:00'),
-       (35, 'Ismail', 'Quentin', 'user35', 'user35@example.com', @pw, 0, '2023-02-08 10:00:00'),
-       (36, 'Jakob', 'Robinson', 'user36', 'user36@example.com', @pw, 0, '2023-02-09 10:00:00'),
-       (37, 'Katia', 'Robinson', 'user37', 'user37@example.com', @pw, 0, '2023-02-10 10:00:00'),
-       (38, 'Lukas', 'Stevens', 'user38', 'user38@example.com', @pw, 0, '2023-02-11 10:00:00'),
-       (39, 'Milan', 'Stevens', 'user39', 'user39@example.com', @pw, 0, '2023-02-12 10:00:00'),
-       (40, 'Nadia', 'Turner', 'user40', 'user40@example.com', @pw, 0, '2023-02-13 10:00:00'),
-       (41, 'Oskar', 'Turner', 'user41', 'user41@example.com', @pw, 0, '2023-02-14 10:00:00'),
-       (42, 'Paula', 'Vaughn', 'user42', 'user42@example.com', @pw, 0, '2023-02-15 10:00:00'),
-       (43, 'Ronan', 'Vaughn', 'user43', 'user43@example.com', @pw, 0, '2023-02-16 10:00:00'),
-       (44, 'Sara', 'Williams', 'user44', 'user44@example.com', @pw, 0, '2023-02-17 10:00:00'),
-       (45, 'Tessa', 'Williams', 'user45', 'user45@example.com', @pw, 0, '2023-02-18 10:00:00');
+-- Moderators (4–8)
+INSERT INTO users (user_id, first_name, last_name, username, email, password, role, created_at)
+VALUES (4, 'Diana', 'Moderworth', 'moderator1', 'moderator1@example.com', @pw, 'MODERATOR', '2023-01-08 09:00:00'),
+       (5, 'Ethan', 'Moderworth', 'moderator2', 'moderator2@example.com', @pw, 'MODERATOR', '2023-01-09 09:00:00'),
+       (6, 'Fiona', 'Moderworth', 'moderator3', 'moderator3@example.com', @pw, 'MODERATOR', '2023-01-10 09:00:00'),
+       (7, 'George', 'Moderworth', 'moderator4', 'moderator4@example.com', @pw, 'MODERATOR', '2023-01-11 09:00:00'),
+       (8, 'Hannah', 'Moderworth', 'moderator5', 'moderator5@example.com', @pw, 'MODERATOR', '2023-01-12 09:00:00');
+
+-- Regular users (9–45)
+INSERT INTO users (user_id, first_name, last_name, username, email, password, role, created_at)
+VALUES (9, 'Felix', 'Walker', 'user06', 'user06@example.com', @pw, 'USER', '2023-01-10 10:00:00'),
+       (10, 'Grace', 'Walker', 'user07', 'user07@example.com', @pw, 'USER', '2023-01-11 10:00:00'),
+       (11, 'Henry', 'Bennett', 'user08', 'user08@example.com', @pw, 'USER', '2023-01-12 10:00:00'),
+       (12, 'Irene', 'Bennett', 'user09', 'user09@example.com', @pw, 'USER', '2023-01-13 10:00:00'),
+       (13, 'Jonas', 'Cooper', 'user10', 'user10@example.com', @pw, 'USER', '2023-01-14 10:00:00'),
+       (14, 'Karen', 'Cooper', 'user11', 'user11@example.com', @pw, 'USER', '2023-01-15 10:00:00'),
+       (15, 'Liam', 'Foster', 'user12', 'user12@example.com', @pw, 'USER', '2023-01-16 10:00:00'),
+       (16, 'Marta', 'Foster', 'user13', 'user13@example.com', @pw, 'USER', '2023-01-17 10:00:00'),
+       (17, 'Noah', 'Granger', 'user14', 'user14@example.com', @pw, 'USER', '2023-01-18 10:00:00'),
+       (18, 'Olga', 'Granger', 'user15', 'user15@example.com', @pw, 'USER', '2023-01-19 10:00:00'),
+       (19, 'Peter', 'Harper', 'user16', 'user16@example.com', @pw, 'USER', '2023-01-20 10:00:00'),
+       (20, 'Quinn', 'Harper', 'user17', 'user17@example.com', @pw, 'USER', '2023-01-21 10:00:00'),
+       (21, 'Riley', 'Iverson', 'user18', 'user18@example.com', @pw, 'USER', '2023-01-22 10:00:00'),
+       (22, 'Sofia', 'Iverson', 'user19', 'user19@example.com', @pw, 'USER', '2023-01-23 10:00:00'),
+       (23, 'Tomas', 'Johnson', 'user20', 'user20@example.com', @pw, 'USER', '2023-01-24 10:00:00'),
+       (24, 'Ulrich', 'Johnson', 'user21', 'user21@example.com', @pw, 'USER', '2023-01-25 10:00:00'),
+       (25, 'Vera', 'Kingston', 'user22', 'user22@example.com', @pw, 'USER', '2023-01-26 10:00:00'),
+       (26, 'Wendy', 'Kingston', 'user23', 'user23@example.com', @pw, 'USER', '2023-01-27 10:00:00'),
+       (27, 'Xenia', 'Lewis', 'user24', 'user24@example.com', @pw, 'USER', '2023-01-28 10:00:00'),
+       (28, 'Yanis', 'Lewis', 'user25', 'user25@example.com', @pw, 'USER', '2023-01-29 10:00:00'),
+       (29, 'Zoran', 'Miller', 'user26', 'user26@example.com', @pw, 'USER', '2023-01-30 10:00:00'),
+       (30, 'Amira', 'Miller', 'user27', 'user27@example.com', @pw, 'USER', '2023-01-31 10:00:00'),
+       (31, 'Bianca', 'Nelson', 'user28', 'user28@example.com', @pw, 'USER', '2023-02-01 10:00:00'),
+       (32, 'Caleb', 'Nelson', 'user29', 'user29@example.com', @pw, 'USER', '2023-02-02 10:00:00'),
+       (33, 'Derek', 'Owenson', 'user30', 'user30@example.com', @pw, 'USER', '2023-02-03 10:00:00'),
+       (34, 'Elena', 'Owenson', 'user31', 'user31@example.com', @pw, 'USER', '2023-02-04 10:00:00'),
+       (35, 'Fabio', 'Patterson', 'user32', 'user32@example.com', @pw, 'USER', '2023-02-05 10:00:00'),
+       (36, 'Greta', 'Patterson', 'user33', 'user33@example.com', @pw, 'USER', '2023-02-06 10:00:00'),
+       (37, 'Helga', 'Quentin', 'user34', 'user34@example.com', @pw, 'USER', '2023-02-07 10:00:00'),
+       (38, 'Ismail', 'Quentin', 'user35', 'user35@example.com', @pw, 'USER', '2023-02-08 10:00:00'),
+       (39, 'Jakob', 'Robinson', 'user36', 'user36@example.com', @pw, 'USER', '2023-02-09 10:00:00'),
+       (40, 'Katia', 'Robinson', 'user37', 'user37@example.com', @pw, 'USER', '2023-02-10 10:00:00'),
+       (41, 'Lukas', 'Stevens', 'user38', 'user38@example.com', @pw, 'USER', '2023-02-11 10:00:00'),
+       (42, 'Milan', 'Stevens', 'user39', 'user39@example.com', @pw, 'USER', '2023-02-12 10:00:00'),
+       (43, 'Nadia', 'Turner', 'user40', 'user40@example.com', @pw, 'USER', '2023-02-13 10:00:00'),
+       (44, 'Oskar', 'Turner', 'user41', 'user41@example.com', @pw, 'USER', '2023-02-14 10:00:00'),
+       (45, 'Paula', 'Vaughn', 'user42', 'user42@example.com', @pw, 'USER', '2023-02-15 10:00:00');
 
 -- ============================================
 -- POSTS: 15 PER LEAF FOLDER (FOLDERS 4–33)
@@ -148,15 +149,15 @@ BEGIN
 
     WHILE f <= 33
         DO
-            SELECT name INTO folder_title FROM forum.folders WHERE folder_id = f;
+            SELECT name INTO folder_title FROM folders WHERE folder_id = f;
 
             SET i = 1;
             WHILE i <= 15
                 DO
-                    -- Rotate authors across regular users (6–45)
-                    SET author_id = 6 + ((f - 4) * 15 + i) MOD 40;
+                    -- Rotate authors across regular users (9–45) - 37 users total
+                    SET author_id = 9 + ((f - 4) * 15 + i) MOD 37;
 
-                    INSERT INTO forum.posts (user_id, title, content, folder_id, created_at)
+                    INSERT INTO posts (user_id, title, content, folder_id, created_at)
                     VALUES (author_id,
                             CONCAT(folder_title, ' - discussion thread #', LPAD(i, 2, '0')),
                             CONCAT(
@@ -194,7 +195,7 @@ BEGIN
     WHILE p <= max_posts
         DO
             SET t_id = 1 + (p MOD 8); -- cycle 1..8
-            INSERT INTO forum.tags_posts (tag_id, post_id)
+            INSERT INTO tags_posts (tag_id, post_id)
             VALUES (t_id, p);
             SET p = p + 1;
         END WHILE;
@@ -220,7 +221,7 @@ BEGIN
 
     WHILE p <= max_posts
         DO
-            SELECT created_at INTO post_created FROM forum.posts WHERE post_id = p;
+            SELECT created_at INTO post_created FROM posts WHERE post_id = p;
 
             SET i = 1;
             WHILE i <= 6
@@ -255,7 +256,7 @@ BEGIN
                                                 );
                         END CASE;
 
-                    INSERT INTO forum.comments (post_id, user_id, content, created_at)
+                    INSERT INTO comments (post_id, user_id, content, created_at)
                     VALUES (p,
                             commenter_id,
                             comment_text,
@@ -290,7 +291,7 @@ BEGIN
                 DO
                     -- About ~1/5 of users like each post in a deterministic pattern
                     IF ((p + u * 3) MOD 11 = 0) THEN
-                        INSERT IGNORE INTO forum.likes (user_id, post_id)
+                        INSERT IGNORE INTO likes (user_id, post_id)
                         VALUES (u, p);
                     END IF;
 
@@ -320,7 +321,7 @@ BEGIN
 
     WHILE p <= max_posts
         DO
-            SELECT created_at INTO post_created FROM forum.posts WHERE post_id = p;
+            SELECT created_at INTO post_created FROM posts WHERE post_id = p;
 
             SET u = 1;
             WHILE u <= 45
@@ -328,7 +329,7 @@ BEGIN
                     -- Each user views only some posts, pattern-based
                     IF ((p + 2 * u) MOD 7 = 0) THEN
                         SET view_d = DATE(DATE_ADD(post_created, INTERVAL (u MOD 25) DAY));
-                        INSERT IGNORE INTO forum.posts_users_views (user_id, post_id, view_date)
+                        INSERT IGNORE INTO posts_users_views (user_id, post_id, view_date)
                         VALUES (u, p, view_d);
                     END IF;
 
@@ -355,7 +356,7 @@ BEGIN
     DECLARE u INT;
 
     -- Determine how many comments we created
-    SELECT MAX(comment_id) INTO max_c FROM forum.comments;
+    SELECT MAX(comment_id) INTO max_c FROM comments;
 
     WHILE c <= max_c
         DO
@@ -364,7 +365,7 @@ BEGIN
                 DO
                     -- Sparse likes: only some users like some comments
                     IF ((c + u * 5) MOD 23 = 0) THEN
-                        INSERT IGNORE INTO forum.comment_likes (comment_id, user_id)
+                        INSERT IGNORE INTO comment_likes (comment_id, user_id)
                         VALUES (c, u);
                     END IF;
 

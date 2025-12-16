@@ -257,22 +257,16 @@ CREATE DATABASE forum_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 The SQL files are migrations that must be executed in order. Run all schema migrations first, then all seed data migrations:
 
 ```bash
-# Run schema migrations in order (v1 -> v2 -> v3 -> v4 -> v5)
+# Run schema
 mysql -u your_username -p forum_db < src/main/resources/db/schema.sql
-mysql -u your_username -p forum_db < src/main/resources/db/schema_v2.sql
-mysql -u your_username -p forum_db < src/main/resources/db/schema_v3.sql
-mysql -u your_username -p forum_db < src/main/resources/db/schema_v4.sql
-mysql -u your_username -p forum_db < src/main/resources/db/schema_v5.sql
 
-# Run seed data migrations in order (v2 -> v3 -> v4 -> v5 -> v6)
-mysql -u your_username -p forum_db < src/main/resources/db/seed-forum-v2.sql
-mysql -u your_username -p forum_db < src/main/resources/db/seed-forum-v3.sql
-mysql -u your_username -p forum_db < src/main/resources/db/seed-forum-v4.sql
-mysql -u your_username -p forum_db < src/main/resources/db/seed-forum-v5.sql
-mysql -u your_username -p forum_db < src/main/resources/db/seed-forum-v6.sql
+# Run seed data
+mysql -u your_username -p forum_db < src/main/resources/db/seed-forum.sql
 ```
 
-**Note**: Each migration builds on the previous one. Skipping files or running them out of order will cause errors.
+**Note**: Dev versions of the db are separated by migration version. If you run the dev scripts, make sure you run each
+migration v1-v2-v3-v4-v5 in order.
+Each migration builds on the previous one. Skipping files or running them out of order will cause errors.
 
 **Migration Summary**:
 - **schema_v4.sql**: Migrates `is_admin` boolean to `role` enum (ADMIN/MODERATOR/USER)
