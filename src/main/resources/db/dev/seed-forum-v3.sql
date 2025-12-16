@@ -1,9 +1,7 @@
-USE forum;
-
 -- =========================
 -- FOLDERS (Home: Movies, Series)
 -- =========================
-INSERT INTO forum.folders (folder_id, parent_id, name, slug, created_at)
+INSERT INTO folders (folder_id, parent_id, name, slug, created_at)
 VALUES (1, NULL, 'Movies', 'movies', '2025-11-20 10:00:00'),
        (2, NULL, 'Series', 'series', '2025-11-20 10:05:00'),
        (3, 1, 'Action Movies', 'action-movies', '2025-11-20 10:10:00'),
@@ -18,7 +16,7 @@ VALUES (1, NULL, 'Movies', 'movies', '2025-11-20 10:00:00'),
 -- =========================
 -- TAGS (movie/series related, all lowercase)
 -- =========================
-INSERT INTO forum.tags (tag_id, name)
+INSERT INTO tags (tag_id, name)
 VALUES (1, 'action'),
        (2, 'drama'),
        (3, 'comedy'),
@@ -33,7 +31,7 @@ VALUES (1, 'action'),
 -- =========================
 -- USERS (22 total, first 3 admins)
 -- =========================
-INSERT INTO forum.users
+INSERT INTO users
 (user_id, first_name, last_name, username, email, password, is_admin, created_at, phone, avatar_url, is_blocked,
  is_deleted)
 VALUES (1, 'Alice', 'Adminson', 'alice.admin', 'alice.admin@example.com',
@@ -84,7 +82,7 @@ VALUES (1, 'Alice', 'Adminson', 'alice.admin', 'alice.admin@example.com',
 -- =========================
 -- POSTS (50 total, 5 per folder, all movies/series themed)
 -- =========================
-INSERT INTO forum.posts
+INSERT INTO posts
 (post_id, user_id, title, content, created_at, updated_at, deleted_at, is_deleted, folder_id)
 VALUES
 -- Folder 1: Movies (general) posts 1–5
@@ -260,7 +258,7 @@ VALUES
 -- =========================
 -- COMMENTS (on first 15 posts, all movie/series related)
 -- =========================
-INSERT INTO forum.comments
+INSERT INTO comments
 (comment_id, is_deleted, post_id, user_id, created_at, deleted_at, updated_at, content)
 VALUES (1, b'0', 1, 5, '2025-11-23 09:00:00', NULL, NULL, 'Really like this general movie discussion thread.'),
        (2, b'0', 1, 6, '2025-11-23 09:10:00', NULL, NULL, 'Great starting list of favorite films.'),
@@ -286,7 +284,7 @@ VALUES (1, b'0', 1, 5, '2025-11-23 09:00:00', NULL, NULL, 'Really like this gene
 -- =========================
 -- LIKES (spread across various posts)
 -- =========================
-INSERT INTO forum.likes (post_id, user_id)
+INSERT INTO likes (post_id, user_id)
 VALUES (1, 4),
        (1, 5),
        (1, 6),
@@ -339,7 +337,7 @@ VALUES (1, 4),
 -- =========================
 -- POST VIEWS (past week and earlier)
 -- =========================
-INSERT INTO forum.posts_users_views
+INSERT INTO posts_users_views
     (posts_users_views_id, user_id, post_id, view_date)
 VALUES (1, 4, 1, '2025-11-19'),
        (2, 5, 1, '2025-11-20'),
@@ -370,7 +368,7 @@ VALUES (1, 4, 1, '2025-11-19'),
 -- =========================
 -- TAGS ↔ POSTS (movie/series themed)
 -- =========================
-INSERT INTO forum.tags_posts (post_id, tag_id)
+INSERT INTO tags_posts (post_id, tag_id)
 VALUES
 -- Movies general: drama / comedy / action mix
 (1, 2),
