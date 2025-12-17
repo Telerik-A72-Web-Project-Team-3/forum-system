@@ -24,4 +24,6 @@ public class FolderCreateDto {
 
     @Size(min = 0, max = 255)
     private String description;
+
+    private String imdbId;
 }

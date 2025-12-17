@@ -25,5 +25,6 @@ public class FolderResponseDto {
     private List<FolderPathDto> pathFolders;
     private int postCountWithSubfolders;
     private String lastActivity;
+    private String imdbId;
     private MediaMetaData metaData;
 }

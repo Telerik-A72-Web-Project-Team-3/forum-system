@@ -14,6 +14,7 @@ public class FolderMapper {
                 .name(dto.getName())
                 .slug(dto.getSlug())
                 .description(dto.getDescription())
+                .imdbId(dto.getImdbId())
                 .build();
     }
 
@@ -31,6 +32,7 @@ public class FolderMapper {
                 .id(folder.getId())
                 .name(folder.getName())
                 .slug(folder.getSlug())
+                .imdbId(folder.getImdbId())
                 .description(folder.getDescription())
                 .build();
     }
@@ -54,6 +56,7 @@ public class FolderMapper {
                 .lastActivity(folderCalculatedStatsDto.getLastActivity())
                 .path(folderCalculatedStatsDto.getPath())
                 .metaData(metaData)
+                .imdbId(folder.getImdbId())
                 .build();
     }
 

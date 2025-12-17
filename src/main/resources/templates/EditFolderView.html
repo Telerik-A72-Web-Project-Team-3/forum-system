@@ -70,6 +70,20 @@
                             </p>
                         </div>
 
+
+                        <div class="form-field">
+                            <label class="form-label" for="imdb-id">Imdb ID</label>
+                            <input class="form-input"
+                                   id="imdb-id"
+                                   placeholder="tt0000000"
+                                   th:field="*{imdbId}"
+                                   type="text">
+                            <div class="field-error" th:errors="*{imdbId}"></div>
+                            <p class="form-help">
+                                Used for sourcing metadata from IMDb.
+                            </p>
+                        </div>
+
                         <div class="form-field">
                             <label class="form-label" for="folder-description">
                                 Description <span>(optional)</span>

@@ -28,7 +28,7 @@ public class MediaMetaDataMapper {
                 .title(dto.getTitle())
                 .releaseDate(releaseDate)
                 .type(dto.getType())
-                .year(Integer.parseInt(dto.getYear()))
+                .year(dto.getYear())
                 .totalSeasons(dto.getTotalSeasons() != null ? dto.getTotalSeasons() : null)
                 .build();
     }

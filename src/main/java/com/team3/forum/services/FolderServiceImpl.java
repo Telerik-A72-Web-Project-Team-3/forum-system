@@ -150,6 +150,7 @@ public class FolderServiceImpl implements FolderService {
         folder.setName(folderUpdateDto.getName());
         folder.setSlug(folderUpdateDto.getSlug());
         folder.setDescription(folderUpdateDto.getDescription());
+        folder.setImdbId(folderUpdateDto.getImdbId());
 
         validateUniqueSlug(folder.getParentFolder(), folder);
 

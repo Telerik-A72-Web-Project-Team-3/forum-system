@@ -24,7 +24,7 @@ public class MediaMetaData {
 
     private String title;
 
-    private int year;
+    private String year;
 
     @Column(name = "release_date")
     private LocalDate releaseDate;

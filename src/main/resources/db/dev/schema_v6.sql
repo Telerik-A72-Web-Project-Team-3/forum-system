@@ -8,7 +8,7 @@ create table media_data
     imdb_id       varchar(30)  not null
         primary key,
     title         varchar(100) null,
-    year          int          null,
+    year varchar(30) null,
     release_date  date         null,
     genres        varchar(100) null,
     plot          text         null,
