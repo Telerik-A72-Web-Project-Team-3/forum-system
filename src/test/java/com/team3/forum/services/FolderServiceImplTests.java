@@ -757,8 +757,11 @@ public class FolderServiceImplTests {
         when(folderRepository.getLastCommentDate(action)).thenReturn(null);
 
         FolderResponseDto dto = new FolderResponseDto();
-        when(folderMapper.toResponseDto(eq(action), any(FolderCalculatedStatsDto.class)))
-                .thenReturn(dto);
+        when(folderMapper.toResponseDto(
+                eq(action),
+                any(FolderCalculatedStatsDto.class),
+                isNull()
+        )).thenReturn(dto);
 
         FolderResponseDto result = folderService.buildFolderResponseDto(action);
 
@@ -766,7 +769,7 @@ public class FolderServiceImplTests {
 
         ArgumentCaptor<FolderCalculatedStatsDto> statsCaptor =
                 ArgumentCaptor.forClass(FolderCalculatedStatsDto.class);
-        verify(folderMapper).toResponseDto(eq(action), statsCaptor.capture());
+        verify(folderMapper).toResponseDto(eq(action), statsCaptor.capture(), isNull());
 
         FolderCalculatedStatsDto stats = statsCaptor.getValue();
         // lastActivity is empty string when no activity

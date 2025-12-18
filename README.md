@@ -275,7 +275,17 @@ Each migration builds on the previous one. Skipping files or running them out of
 
 4. **Configure application secrets**
 
-Create `src/main/resources/application-secrets.properties`:
+To enable database access and external integrations, create the following configuration file.
+
+### OMDb API Key (optional)
+
+Request an OMDb API key from: https://www.omdbapi.com/apikey.aspx  
+Use this key to fetch movie and series metadata (titles, posters, ratings, plot, etc.).
+
+### Create secrets file
+
+Create the file `src/main/resources/application-secrets.properties` and add:
+
 ```properties
 # Database Configuration
 spring.datasource.url=jdbc:mariadb://localhost:3306/forum_db
@@ -285,6 +295,10 @@ spring.datasource.password=your_password
 # JWT Configuration
 jwt.secret=your_secret_key_at_least_256_bits
 jwt.expiration=86400000
+# External OMDb API
+external.omdb.apikey=YOUR_API_KEY
+external.omdb.baseUrl=https://www.omdbapi.com
+
 ```
 
 5. **Run the application**

@@ -1,6 +1,7 @@
 package com.team3.forum.helpers;
 
 import com.team3.forum.models.Folder;
+import com.team3.forum.models.MediaMetaData;
 import com.team3.forum.models.folderDtos.*;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ public class FolderMapper {
                 .name(dto.getName())
                 .slug(dto.getSlug())
                 .description(dto.getDescription())
+                .imdbId(dto.getImdbId())
                 .build();
     }
 
@@ -30,12 +32,16 @@ public class FolderMapper {
                 .id(folder.getId())
                 .name(folder.getName())
                 .slug(folder.getSlug())
+                .imdbId(folder.getImdbId())
                 .description(folder.getDescription())
                 .build();
     }
 
 
-    public FolderResponseDto toResponseDto(Folder folder, FolderCalculatedStatsDto folderCalculatedStatsDto) {
+    public FolderResponseDto toResponseDto(Folder folder,
+                                           FolderCalculatedStatsDto folderCalculatedStatsDto,
+                                           MediaMetaData metaData
+    ) {
         return FolderResponseDto.builder()
                 .name(folder.getName())
                 .slug(folder.getSlug())
@@ -49,6 +55,8 @@ public class FolderMapper {
                 .pathFolders(folderCalculatedStatsDto.getPathFolders())
                 .lastActivity(folderCalculatedStatsDto.getLastActivity())
                 .path(folderCalculatedStatsDto.getPath())
+                .metaData(metaData)
+                .imdbId(folder.getImdbId())
                 .build();
     }
 
